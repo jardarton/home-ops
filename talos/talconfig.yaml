@@ -1,0 +1,98 @@
+clusterName: heim
+talosVersion: "${talosVersion}"
+kubernetesVersion: "${kubernetesVersion}"
+endpoint: https://192.168.1.8:6443
+additionalApiServerCertSans: &sans
+  - "127.0.0.1"
+  - "192.168.1.8"
+additionalMachineCertSans: *sans
+clusterPodNets: ["10.42.0.0/16"]
+clusterSvcNets: ["10.43.0.0/16"]
+# Disable built-in CNI to use Cilium
+cniConfig:
+  name: none
+nodes:
+  - hostname: "hp-0"
+    ipAddress: "192.168.1.20"
+    installDisk: "/dev/sdb"
+    machineSpec:
+      secureboot: false
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "38:22:e2:17:5a:5a"
+        dhcp: false
+        addresses:
+          - "192.168.1.20/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "192.168.1.1"
+        mtu: 1500
+        vip:
+          ip: "192.168.1.8"
+          # - hostname: "hp-1"
+          #   ipAddress: "192.168.1.21"
+          #   installDisk: "/dev/sda"
+          #   machineSpec:
+          #     secureboot: false
+          #   controlPlane: true
+          #   networkInterfaces:
+          #     - deviceSelector:
+          #         hardwareAddr: "00:00:00:00:00:02"
+          #       dhcp: false
+          #       addresses:
+          #         - "192.168.1.21/24"
+          #       routes:
+          #         - network: "0.0.0.0/0"
+          #           gateway: "192.168.1.1"
+          #       mtu: 1500
+          #       vip:
+          #         ip: "192.168.1.8"
+          # - hostname: "hp-2"
+          #   ipAddress: "192.168.1.22"
+          #   installDisk: "/dev/sda"
+          #   machineSpec:
+          #     secureboot: false
+          #   controlPlane: true
+          #   networkInterfaces:
+          #     - deviceSelector:
+          #         hardwareAddr: "00:00:00:00:00:03"
+          #       dhcp: false
+          #       addresses:
+          #         - "192.168.1.22/24"
+          #       routes:
+          #         - network: "0.0.0.0/0"
+          #           gateway: "192.168.1.1"
+          #       mtu: 1500
+          #       vip:
+          #         ip: "192.168.1.8"
+# Global patches
+patches:
+  - "@./patches/global/machine-files.yaml"
+  - "@./patches/global/machine-kubelet.yaml"
+  - "@./patches/global/machine-network.yaml"
+  - "@./patches/global/machine-sysctls.yaml"
+  - "@./patches/global/machine-time.yaml"
+# Controller patches
+controlPlane:
+  schematic:
+    customization:
+      extraKernelArgs:
+        - -init_on_alloc
+        - -init_on_free
+        - -selinux
+        - apparmor=0
+        - init_on_alloc=0
+        - init_on_free=0
+        - mitigations=off
+        - net.ifnames=0
+        - security=none
+        - talos.auditd.disabled=1
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/intel-ucode
+          # - siderolabs/nfsrahead
+          - siderolabs/i915 # Intel iGPU
+  patches:
+    - "@./patches/controller/admission-controller-patch.yaml"
+    - "@./patches/controller/cluster.yaml"
