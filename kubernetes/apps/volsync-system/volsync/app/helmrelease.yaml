@@ -1,4 +1,3 @@
----
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/source.toolkit.fluxcd.io/helmrepository_v1.json
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
@@ -47,4 +46,4 @@ spec:
     podSecurityContext:
       runAsNonRoot: true
       runAsUser: 1000
-      runAsGroup: 1000
+      runAsGroup: 100

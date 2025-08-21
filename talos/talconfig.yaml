@@ -21,51 +21,36 @@ nodes:
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "38:22:e2:17:5a:5a"
-        dhcp: false
-        addresses:
-          - "192.168.1.20/24"
-        routes:
-          - network: "0.0.0.0/0"
-            gateway: "192.168.1.1"
+        dhcp: true
         mtu: 1500
         vip:
           ip: "192.168.1.8"
-          # - hostname: "hp-1"
-          #   ipAddress: "192.168.1.21"
-          #   installDisk: "/dev/sda"
-          #   machineSpec:
-          #     secureboot: false
-          #   controlPlane: true
-          #   networkInterfaces:
-          #     - deviceSelector:
-          #         hardwareAddr: "00:00:00:00:00:02"
-          #       dhcp: false
-          #       addresses:
-          #         - "192.168.1.21/24"
-          #       routes:
-          #         - network: "0.0.0.0/0"
-          #           gateway: "192.168.1.1"
-          #       mtu: 1500
-          #       vip:
-          #         ip: "192.168.1.8"
-          # - hostname: "hp-2"
-          #   ipAddress: "192.168.1.22"
-          #   installDisk: "/dev/sda"
-          #   machineSpec:
-          #     secureboot: false
-          #   controlPlane: true
-          #   networkInterfaces:
-          #     - deviceSelector:
-          #         hardwareAddr: "00:00:00:00:00:03"
-          #       dhcp: false
-          #       addresses:
-          #         - "192.168.1.22/24"
-          #       routes:
-          #         - network: "0.0.0.0/0"
-          #           gateway: "192.168.1.1"
-          #       mtu: 1500
-          #       vip:
-          #         ip: "192.168.1.8"
+  - hostname: "hp-1"
+    ipAddress: "192.168.1.21"
+    installDisk: "/dev/sdb"
+    machineSpec:
+      secureboot: false
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "38:22:e2:1a:92:09"
+        dhcp: true
+        mtu: 1500
+        vip:
+          ip: "192.168.1.8"
+  - hostname: "hp-2"
+    ipAddress: "192.168.1.22"
+    installDisk: "/dev/sdb"
+    machineSpec:
+      secureboot: false
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "8c:dc:d4:2f:1e:f2"
+        dhcp: true
+        mtu: 1500
+        vip:
+          ip: "192.168.1.8"
 # Global patches
 patches:
   - "@./patches/global/machine-files.yaml"

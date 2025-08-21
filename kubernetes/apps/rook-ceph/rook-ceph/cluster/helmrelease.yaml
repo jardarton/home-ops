@@ -9,7 +9,7 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: v1.17.7
+    tag: v1.18.0
   url: oci://ghcr.io/rook/rook-ceph-cluster
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
@@ -57,19 +57,12 @@ spec:
         wipeDevicesFromOtherClusters: true
       crashCollector:
         disable: false
-      csi:
-        readAffinity:
-          enabled: true
       dashboard:
         enabled: true
         urlPrefix: /
         ssl: false
         prometheusEndpoint: http://prometheus-operated.observability.svc.cluster.local:9090
-      mon:
-        count: 1
-        allowMultiplePerNode: true
       mgr:
-        count: 1 # TODO single node for now
         modules:
           - name: diskprediction_local
             enabled: true
@@ -86,7 +79,7 @@ spec:
       storage:
         useAllNodes: true
         useAllDevices: false
-        deviceFilter: "^nvme[0-9]n[0-9]$"
+        deviceFilter: "^(nvme[0-9]n[0-9])|sda$"
         config:
           osdsPerDevice: "1"
     cephBlockPools:
@@ -94,7 +87,7 @@ spec:
         spec:
           failureDomain: host
           replicated:
-            size: 1
+            size: 3
         storageClass:
           enabled: true
           name: ceph-block

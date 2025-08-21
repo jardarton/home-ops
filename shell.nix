@@ -24,6 +24,7 @@ pkgs.mkShell {
     kubeconform
     (pkgs.wrapHelm pkgs.kubernetes-helm { plugins = [ pkgs.kubernetes-helmPlugins.helm-diff ]; })
     minijinja
+    pv-migrate
   ];
 
   shellHook = ''
