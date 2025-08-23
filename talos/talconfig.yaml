@@ -25,6 +25,10 @@ nodes:
         mtu: 1500
         vip:
           ip: "192.168.1.8"
+        vlans:
+          - vlanId: 303
+            dhcp: false
+            mtu: 1500
   - hostname: "hp-1"
     ipAddress: "192.168.1.21"
     installDisk: "/dev/sdb"
@@ -38,6 +42,10 @@ nodes:
         mtu: 1500
         vip:
           ip: "192.168.1.8"
+        vlans:
+          - vlanId: 303
+            dhcp: false
+            mtu: 1500
   - hostname: "hp-2"
     ipAddress: "192.168.1.22"
     installDisk: "/dev/sdb"
@@ -51,6 +59,10 @@ nodes:
         mtu: 1500
         vip:
           ip: "192.168.1.8"
+        vlans:
+          - vlanId: 303
+            dhcp: false
+            mtu: 1500
 # Global patches
 patches:
   - "@./patches/global/machine-files.yaml"
