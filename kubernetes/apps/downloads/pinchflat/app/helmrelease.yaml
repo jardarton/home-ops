@@ -51,7 +51,7 @@ spec:
                 cpu: 10m
                 memory: 2Gi
               limits:
-                # gpu.intel.com/i915: 1
+                gpu.intel.com/i915: 1
                 memory: 8Gi
     defaultPodOptions:
       securityContext:
@@ -88,20 +88,11 @@ spec:
       media:
         type: nfs
         server: 192.168.1.10
-        path: /mnt/data/
+        path: /mnt/data
         advancedMounts:
           pinchflat:
             app:
               - path: /downloads
-                subPath: Library/YouTube
-      # media:
-      #   type: nfs
-      #   server: 192.168.1.10
-      #   path: /mnt/wolf/musikk
-      #   advancedMounts:
-      #     pinchflat:
-      #       app:
-      #         - path: /downloads
-      #           subPath: Library/YouTube
+                subPath: youtube
       tmp:
         type: emptyDir

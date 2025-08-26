@@ -18,6 +18,8 @@ nodes:
     machineSpec:
       secureboot: false
     controlPlane: true
+    nodeLabels:
+      intel.feature.node.kubernetes.io/gpu: "true"
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "38:22:e2:17:5a:5a"
@@ -31,6 +33,8 @@ nodes:
     machineSpec:
       secureboot: false
     controlPlane: true
+    nodeLabels:
+      intel.feature.node.kubernetes.io/gpu: "true"
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "38:22:e2:1a:92:09"
@@ -44,6 +48,8 @@ nodes:
     machineSpec:
       secureboot: false
     controlPlane: true
+    # nodeLabels:
+    #   intel.feature.node.kubernetes.io/gpu: "true"  #not yet
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "8c:dc:d4:2f:1e:f2"
