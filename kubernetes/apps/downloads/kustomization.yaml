@@ -5,9 +5,9 @@ namespace: downloads
 components:
   - ../../components/common
 resources:
-  - pinchflat/ks.yaml
+  # - pinchflat/ks.yaml
   - radarr/ks.yaml
   - sonarr/ks.yaml
   - recyclarr/ks.yaml
-  - lidarr/ks.yaml
+  # - lidarr/ks.yaml
   # - prowlarr/ks.yaml TODO
