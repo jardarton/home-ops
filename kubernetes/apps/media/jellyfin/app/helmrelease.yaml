@@ -66,6 +66,8 @@ spec:
     service:
       app:
         type: LoadBalancer
+        annotations:
+          tailscale.com/expose: "true"
         ports:
           http:
             port: *port
