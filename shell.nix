@@ -4,6 +4,8 @@
 
 pkgs.mkShell {
   packages = with pkgs; [
+    k9s
+    kubectl
     python3
     makejinja
     talhelper
