@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: immich-server
+  name: immich-machine-learning
 spec:
   interval: 1h
   timeout: 5m
@@ -18,22 +18,21 @@ spec:
       retries: 5
   values:
     controllers:
-      immich-server:
-        strategy: RollingUpdate
+      immich-machine-learning:
         annotations:
           reloader.stakater.com/auto: "true"
+        strategy: RollingUpdate
         containers:
           main:
             image:
-              repository: ghcr.io/immich-app/immich-server
-              tag: v1.141.1
+              repository: ghcr.io/immich-app/immich-machine-learning
+              tag: v1.140.1
             resources:
               requests:
-                cpu: 100m
+                cpu: 15m
                 memory: 250Mi
               limits:
-                gpu.intel.com/i915: 1
-                memory: 3000Mi
+                memory: 4000Mi
             probes:
               startup:
                 enabled: true
@@ -57,44 +56,16 @@ spec:
                     key: uri
     service:
       main:
-        annotations:
-          tailscale.com/expose: "true"
-        controller: immich-server
+        controller: immich-machine-learning
         ports:
           http:
-            port: 2283
-    route:
-      main:
-        hostnames: ["bilder.${SECRET_DOMAIN}"]
-        parentRefs:
-          - name: internal
-            namespace: kube-system
-            sectionName: https
+            port: 3003
     persistence:
       data:
         enabled: true
         existingClaim: immich-data
         globalMounts:
           - path: /usr/src/app/upload
-      matplotlib:
+      cache:
+        enabled: true
         type: emptyDir
-        advancedMounts:
-          immich-server:
-            main:
-              - path: /config/matplotlib
-      external-library:
-        type: nfs
-        server: 192.168.1.10
-        path: /mnt/wolf/bilder
-        globalMounts:
-          - path: /mnt
-            readOnly: true
-      tmpfs:
-        type: emptyDir
-        advancedMounts:
-          immich-server:
-            main:
-              - path: /usr/src/app/.reverse-geocoding-dump
-                subPath: geocoding
-              - path: /usr/src/app/.transformers_cache
-                subPath: transformers
