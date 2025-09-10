@@ -18,8 +18,6 @@ nodes:
     machineSpec:
       secureboot: false
     controlPlane: true
-    nodeLabels:
-      intel.feature.node.kubernetes.io/gpu: "true"
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "38:22:e2:17:5a:5a"
@@ -44,21 +42,32 @@ nodes:
           ip: "192.168.1.8"
   - hostname: "hp-2"
     ipAddress: "192.168.1.22"
-    installDisk: "/dev/sdb"
+    installDisk: "/dev/nvme1n1"
     machineSpec:
       secureboot: false
     controlPlane: true
     # nodeLabels:
-    #   intel.feature.node.kubernetes.io/gpu: "true"  #not yet
+    #   intel.feature.node.kubernetes.io/gpu: "true"
     networkInterfaces:
       - deviceSelector:
-          hardwareAddr: "8c:dc:d4:2f:1e:f2"
+          hardwareAddr: "f8:b4:6a:a2:f6:2b"
         dhcp: true
         mtu: 1500
         vip:
           ip: "192.168.1.8"
 # Global patches
 patches:
+  - |-
+    machine:
+      kubelet:
+        extraMounts:
+          - destination: /var/openebs/local
+            type: bind
+            source: /var/openebs/local
+            options:
+              - rbind
+              - rshared
+              - rw
   - "@./patches/global/machine-files.yaml"
   - "@./patches/global/machine-kubelet.yaml"
   - "@./patches/global/machine-network.yaml"
@@ -80,6 +89,7 @@ controlPlane:
         - net.ifnames=0
         - security=none
         - talos.auditd.disabled=1
+        - i915.enable_guc=3 # Meteor Lake CPU & Intel iGPU
       systemExtensions:
         officialExtensions:
           - siderolabs/intel-ucode
