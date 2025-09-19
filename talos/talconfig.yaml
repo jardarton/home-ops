@@ -14,7 +14,8 @@ cniConfig:
 nodes:
   - hostname: "hp-0"
     ipAddress: "192.168.1.20"
-    installDisk: "/dev/sdb"
+    installDiskSelector:
+      model: PNY 250GB SATA S
     machineSpec:
       secureboot: false
     controlPlane: true
@@ -27,7 +28,8 @@ nodes:
           ip: "192.168.1.8"
   - hostname: "hp-1"
     ipAddress: "192.168.1.21"
-    installDisk: "/dev/sdb"
+    installDiskSelector:
+      model: PNY 250GB SATA S
     machineSpec:
       secureboot: false
     controlPlane: true
@@ -42,12 +44,13 @@ nodes:
           ip: "192.168.1.8"
   - hostname: "hp-2"
     ipAddress: "192.168.1.22"
-    installDisk: "/dev/nvme1n1"
+    installDiskSelector:
+      model: KXG50ZNV256G TOSHIBA
     machineSpec:
       secureboot: false
     controlPlane: true
-    # nodeLabels:
-    #   intel.feature.node.kubernetes.io/gpu: "true"
+    nodeLabels:
+      intel.feature.node.kubernetes.io/gpu: "true"
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "f8:b4:6a:a2:f6:2b"
@@ -79,8 +82,6 @@ controlPlane:
   schematic:
     customization:
       extraKernelArgs:
-        - -init_on_alloc
-        - -init_on_free
         - -selinux
         - apparmor=0
         - init_on_alloc=0
@@ -89,11 +90,11 @@ controlPlane:
         - net.ifnames=0
         - security=none
         - talos.auditd.disabled=1
-        - i915.enable_guc=3 # Meteor Lake CPU & Intel iGPU
+        - i915.enable_guc=2 # Meteor Lake CPU & Intel iGPU
       systemExtensions:
         officialExtensions:
           - siderolabs/intel-ucode
-          # - siderolabs/nfsrahead
+          #- siderolabs/nfsrahead
           - siderolabs/i915 # Intel iGPU
   patches:
     - "@./patches/controller/admission-controller-patch.yaml"
