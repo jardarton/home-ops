@@ -62,10 +62,11 @@ spec:
         controller: immich-server
         ports:
           http:
-            port: 2283
+            port: 80
+            targetPort: 2283
     route:
       main:
-        hostnames: ["bilder.${SECRET_DOMAIN}"]
+        hostnames: ["bilder.${SECRET_DOMAIN}", "immich.${SECRET_DOMAIN}"]
         parentRefs:
           - name: internal
             namespace: kube-system
