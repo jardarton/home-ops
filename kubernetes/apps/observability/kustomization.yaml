@@ -7,4 +7,5 @@ components:
 resources:
   - ./keda/ks.yaml
   - ./kube-prometheus-stack/ks.yaml
+  - ./grafana/ks.yaml
   - ./blackbox-exporter/ks.yaml
