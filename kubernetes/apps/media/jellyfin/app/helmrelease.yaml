@@ -91,23 +91,9 @@ spec:
       media:
         type: nfs
         server: 192.168.1.10
-        path: /mnt/data
+        path: /mnt/wolf/media
         globalMounts:
           - path: /media
-            readOnly: true
-      music:
-        type: nfs
-        server: 192.168.1.10
-        path: /mnt/wolf/musikk
-        globalMounts:
-          - path: /music
-            readOnly: true
-      barnetv:
-        type: nfs
-        server: 192.168.1.10
-        path: /mnt/wolf/barnetv
-        globalMounts:
-          - path: /barnetv
             readOnly: true
       tmpfs:
         type: emptyDir
