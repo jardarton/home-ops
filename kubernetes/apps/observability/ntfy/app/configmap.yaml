@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.26.1-standalone-strict/configmap-v1.json
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntfy-config
+data:
+  NTFY_BASE_URL: http://ntfy
+  NTFY_CACHE_FILE: /var/cache/ntfy/cache.db
+  NTFY_ATTACHMENT_CACHE_DIR: /var/cache/ntfy/attachments
+  NTFY_UPSTREAM_BASE_URL: https://ntfy.sh
+  LISTEN-HTTP: ":80"

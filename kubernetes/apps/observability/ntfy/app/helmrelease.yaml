@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ntfy
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      ntfy:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: binwiederhier/ntfy
+              tag: v2.14.0@sha256:5a051798d14138c3ecb12c038652558ab6a077e1aceeb867c151cbf5fa8451ef
+            args: ["serve"]
+            resources:
+              requests:
+                cpu: 150m
+                memory: 150Mi
+              limits:
+                memory: 300Mi
+                cpu: 200m
+            env:
+              TZ: Europe/Oslo
+              NTFY_LOG_LEVEL: DEBUG
+            envFrom:
+              - configMapRef:
+                  name: ntfy-config
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
+        statefulset:
+          podManagementPolicy: Parallel
+        type: statefulset
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: ntfy
+        sessionAffinity: ClientIP
+        annotations:
+          tailscale.com/expose: "true"
+        ports:
+          http:
+            port: 80
+    route:
+      app:
+        hostnames:
+          - "ntfy.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+    persistence:
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /var/cache/ntfy
