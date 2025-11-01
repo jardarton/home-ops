@@ -92,7 +92,7 @@ spec:
         path: /mnt/wolf/media
         globalMounts:
           - path: /media
-            readOnly: true
+            readOnly: false
       tmpfs:
         type: emptyDir
         globalMounts:
