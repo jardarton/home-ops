@@ -74,9 +74,12 @@ spec:
     persistence:
       data:
         enabled: true
-        existingClaim: immich-data
+        type: nfs
+        server: 192.168.1.10
+        path: /mnt/wolf/immich
         globalMounts:
           - path: /usr/src/app/upload
+            readOnly: false
       matplotlib:
         type: emptyDir
         advancedMounts:
