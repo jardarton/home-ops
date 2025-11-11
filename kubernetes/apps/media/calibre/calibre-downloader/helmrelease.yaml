@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app calibre-downloader
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 911
+        runAsGroup: 911
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsNonRoot: false
+        seccompProfile: {type: RuntimeDefault}
+    controllers:
+      ${APP}:
+        containers:
+          app:
+            image:
+              repository: ghcr.io/calibrain/calibre-web-automated-book-downloader
+              tag: v0.2.4@sha256:b1296c5edc89eee8742d86392ce40707233671044a454e002821e5c76cd58deb
+            env:
+              FLASK_PORT: &port 8084
+              INGEST_DIR: &ingest /cwa-book-ingest
+              UID: 911
+              GID: 911
+              BOOK_LANGUAGE: en
+              DEFAULT_SLEEP: 15
+              USE_BOOK_TITLE: true
+              LOG_LEVEL: debug
+              TZ: Europe/Oslo
+            command:
+              - /bin/sh
+              - -c
+              - |
+                gunicorn -t 300 -b 0.0.0.0:8084 app:app
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /request/api/status
+                    port: *port
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 10m
+                memory: 150Mi
+              limits:
+                memory: 500Mi
+            securityContext:
+              readOnlyRootFilesystem: false
+              capabilities:
+                drop:
+                  - ALL
+              allowPrivilegeEscalation: true
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *port
+    route:
+      app:
+        hostnames: ["calibre-downloader.${SECRET_DOMAIN}", "ny-bok.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+            # rules:
+            #   - backendRefs:
+            #       - name: *app
+            #         port: *port
+            #     timeouts:
+            #       request: 0s
+    persistence:
+      tmpfs:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
+            subPath: tmp
+          - path: /app/downloaded_files
+            subPath: downloads
+          - path: /var/log/cwa-book-downloader/
+            subPath: logs
+      ingest:
+        type: nfs
+        server: 192.168.1.10
+        path: /mnt/wolf/bok/calibre-ingest
+        globalMounts:
+          - path: *ingest
