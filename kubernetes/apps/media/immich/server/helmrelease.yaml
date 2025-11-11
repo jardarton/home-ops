@@ -55,6 +55,13 @@ spec:
                   secretKeyRef:
                     name: immich-database-pguser-immich
                     key: uri
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
     service:
       main:
         annotations:

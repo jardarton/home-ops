@@ -57,7 +57,7 @@ spec:
         enabled: true
         repoName: repo1
         options:
-          - --set 20250914-010001F_20250918-010001I
+          - --set 20251109-010001F_20251110-010001I
       global:
         repo1-retention-full: "14"
         repo1-retention-full-type: time
