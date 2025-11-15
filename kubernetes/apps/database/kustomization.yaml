@@ -8,4 +8,4 @@ resources:
   - ./cdpg-operator/ks.yaml
   - ./ot-operator/ks.yaml
   - ./redisclusters/ks.yaml
-  - ./cloudnative-pg/ks.yaml
+  # - ./cloudnative-pg/ks.yaml //TODO more mem

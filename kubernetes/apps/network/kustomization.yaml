@@ -7,6 +7,6 @@ components:
 resources:
   - ./cloudflare-dns/ks.yaml
   - ./k8s-gateway/ks.yaml
-  - ./adguard-dns/ks.yaml
+  - ./adguard/ks.yaml
   - ./multus/ks.yaml
   - ./tailscale/ks.yaml
