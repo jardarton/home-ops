@@ -58,6 +58,20 @@ nodes:
         mtu: 1500
         vip:
           ip: "192.168.1.8"
+  - hostname: "hp-3"
+    ipAddress: "192.168.1.23"
+    installDiskSelector:
+      model: M4-CT256M4SSD3
+    machineSpec:
+      secureboot: false
+    controlPlane: false
+    nodeLabels:
+      intel.feature.node.kubernetes.io/gpu: "false"
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "ec:a8:6b:f4:58:5b"
+        dhcp: true
+        mtu: 1500
 # Global patches
 patches:
   - |-
@@ -88,7 +102,7 @@ controlPlane:
         - init_on_free=0
         - mitigations=off
         - net.ifnames=0
-        - security=none
+        - security=
         - talos.auditd.disabled=1
         - i915.enable_guc=2 # Meteor Lake CPU & Intel iGPU
       systemExtensions:
@@ -99,3 +113,15 @@ controlPlane:
   patches:
     - "@./patches/controller/admission-controller-patch.yaml"
     - "@./patches/controller/cluster.yaml"
+worker:
+  schematic:
+    customization:
+      extraKernelArgs:
+        - -selinux
+        - apparmor=0
+        - init_on_alloc=0
+        - init_on_free=0
+        - mitigations=off
+        - net.ifnames=0
+        - security=none
+        - talos.auditd.disabled=1
