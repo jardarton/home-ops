@@ -9,3 +9,4 @@ resources:
   - home-assistant/ks.yaml
   - zigbee2mqtt/ks.yaml
   - mosquitto/ks.yaml
+  - tandoor/ks.yaml
