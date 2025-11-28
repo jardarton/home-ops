@@ -61,7 +61,7 @@ spec:
         enabled: true
         type: nfs
         server: 192.168.1.10
-        path: /mnt/wolf/backups/pgdump
+        path: /mnt/wolf/backup/pgdump
         globalMounts:
           - path: /backups
       scripts:

@@ -42,6 +42,7 @@
               (pkgs.wrapHelm pkgs.kubernetes-helm { plugins = [ pkgs.kubernetes-helmPlugins.helm-diff ]; })
               minijinja
               pv-migrate
+              rainfrog
             ];
 
             shellHook = ''
