@@ -10,3 +10,4 @@ resources:
   - zigbee2mqtt/ks.yaml
   - mosquitto/ks.yaml
   - tandoor/ks.yaml
+  - lubelog/ks.yaml
