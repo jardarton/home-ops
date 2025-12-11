@@ -43,6 +43,7 @@
               minijinja
               pv-migrate
               rainfrog
+              pgcli
             ];
 
             shellHook = ''
