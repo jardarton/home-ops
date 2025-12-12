@@ -9,3 +9,4 @@ resources:
   - ./ot-operator/ks.yaml
   - ./redisclusters/ks.yaml
   - ./cloudnative-pg/ks.yaml
+  - ./dragonfly/ks.yaml
