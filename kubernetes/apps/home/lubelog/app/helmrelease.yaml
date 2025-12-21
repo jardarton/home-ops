@@ -45,6 +45,8 @@ spec:
         seccompProfile: {type: RuntimeDefault}
     service:
       app:
+        annotations:
+          tailscale.com/expose: "true"
         controller: *app
         ports:
           http:
