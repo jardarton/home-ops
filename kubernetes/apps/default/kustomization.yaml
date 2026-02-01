@@ -5,7 +5,7 @@ namespace: default
 components:
   - ../../components/common
 resources:
-  - ./echo/ks.yaml
-  - ./it-tools/ks.yaml
-  - ./flaresolverr/ks.yaml
+  # - ./echo/ks.yaml
+  # - ./it-tools/ks.yaml
+  # - ./flaresolverr/ks.yaml
   - ./paperless/ks.yaml

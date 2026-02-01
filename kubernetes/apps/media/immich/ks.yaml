@@ -1,34 +1,34 @@
-# yaml-language-server: $schema=https://schemas.budimanjojo.com/kustomize.toolkit.fluxcd.io/kustomization_v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: immich-database
-  namespace: &namespace media
-spec:
-  interval: 1h
-  retryInterval: 2m
-  timeout: 5m
-  prune: true
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: immich
-      app.kubernetes.io/instance: immich
-      app.kubernetes.io/part-of: immich
-  path: ./kubernetes/apps/media/immich/database
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  wait: true
-  dependsOn:
-    - name: openebs
-      namespace: openebs-system
-    - name: csi-driver-nfs
-      namespace: nfs-system
-    - name: cdpg-operator
-      namespace: database
-  targetNamespace: *namespace
----
+# # yaml-language-server: $schema=https://schemas.budimanjojo.com/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: immich-database
+#   namespace: &namespace media
+# spec:
+#   interval: 1h
+#   retryInterval: 2m
+#   timeout: 5m
+#   prune: true
+#   commonMetadata:
+#     labels:
+#       app.kubernetes.io/name: immich
+#       app.kubernetes.io/instance: immich
+#       app.kubernetes.io/part-of: immich
+#   path: ./kubernetes/apps/media/immich/database
+#   sourceRef:
+#     kind: GitRepository
+#     name: flux-system
+#     namespace: flux-system
+#   wait: true
+#   dependsOn:
+#     - name: openebs
+#       namespace: openebs-system
+#     - name: csi-driver-nfs
+#       namespace: nfs-system
+#     - name: cdpg-operator
+#       namespace: database
+#   targetNamespace: *namespace
+# ---
 # yaml-language-server: $schema=https://schemas.budimanjojo.com/kustomize.toolkit.fluxcd.io/kustomization_v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

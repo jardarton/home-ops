@@ -21,7 +21,7 @@ spec:
     key: init.sql
   instances:
     - name: instance
-      replicas: 3
+      replicas: 1
       dataVolumeClaimSpec:
         storageClassName: openebs-hostpath
         accessModes:

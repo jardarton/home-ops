@@ -28,10 +28,10 @@ spec:
             args: ["serve"]
             resources:
               requests:
-                cpu: 150m
-                memory: 150Mi
+                cpu: 100m
+                memory: 100Mi
               limits:
-                memory: 300Mi
+                memory: 200Mi
                 cpu: 200m
             env:
               TZ: Europe/Oslo
