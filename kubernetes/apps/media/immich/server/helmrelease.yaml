@@ -19,9 +19,24 @@ spec:
   values:
     controllers:
       immich-server:
+        replicas: 1
         strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
+        initContainers:
+          01-init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 18.1.0
+            envFrom: &dbEnvFrom
+              - secretRef:
+                  name: immich-secret
+          02-init-extensions:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 18.1.0
+              pullPolicy: IfNotPresent
+            envFrom: *dbEnvFrom
         containers:
           main:
             image:
@@ -49,12 +64,12 @@ spec:
                   name: immich-secret
               - configMapRef:
                   name: immich-config
-            env:
-              DB_URL:
-                valueFrom:
-                  secretKeyRef:
-                    name: immich-database-pguser-immich
-                    key: uri
+                  # env:
+                  #   DB_URL:
+                  #     valueFrom:
+                  #       secretKeyRef:
+                  #         name: immich-database-pguser-immich
+                  #         key: uri
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
