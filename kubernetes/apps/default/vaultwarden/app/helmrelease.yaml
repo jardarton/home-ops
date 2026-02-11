@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: vaultwarden
+  name: &app vaultwarden
 spec:
   interval: 1h
   chartRef:
@@ -30,9 +30,9 @@ spec:
             env:
               TZ: Europe/Oslo
               DATA_FOLDER: "/data"
-              DOMAIN: https://bitwarden.${SECRET_DOMAIN}
-              SIGNUPS_ALLOWED: false
-              SHOW_PASSWORD_HINT: false
+              DOMAIN: https://passord.${SECRET_DOMAIN}
+              SIGNUPS_ALLOWED: true
+              SHOW_PASSWORD_HINT: true
               # SMTP_FROM: bitwarden@${SECRET_DOMAIN}
               # SMTP_FROM_NAME: Bitwarden
               # SMTP_HOST: smtp-relay.networking.svc.cluster.local
@@ -58,37 +58,17 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
+        controller: *app
         ports:
           http:
-            port: 80
+            port: &port 80
     route:
       app:
-        forceRename: "{{ .Release.Name }}"
-        hostnames:
-          - "bitwarden.${SECRET_DOMAIN}"
+        hostnames: ["passord.${SECRET_DOMAIN}", "bitwarden.${SECRET_DOMAIN}"]
         parentRefs:
           - name: internal
             namespace: kube-system
             sectionName: https
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: http
-      admin:
-        hostnames:
-          - "bitwarden.${SECRET_DOMAIN}"
-        parentRefs:
-          - name: internal
-            namespace: kube-system
-            sectionName: https
-        rules:
-          - backendRefs:
-              - identifier: app
-                port: http
-            matches:
-              - path:
-                  type: PathPrefix
-                  value: /admin
     persistence:
       data:
         existingClaim: "{{ .Release.Name }}"
