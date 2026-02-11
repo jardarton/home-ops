@@ -7,5 +7,6 @@ components:
 resources:
   # - ./echo/ks.yaml
   # - ./it-tools/ks.yaml
-  # - ./flaresolverr/ks.yaml
+  - ./flaresolverr/ks.yaml
+  - ./vaultwarden/ks.yaml
   - ./paperless/ks.yaml
