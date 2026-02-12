@@ -31,7 +31,7 @@ spec:
               EXCLUDE_DBS: postgres template0 template1
             envFrom: &envFrom
               - secretRef:
-                  name: cloudnative-pg-postgres14-pgdump-secret
+                  name: cloudnative-pg-postgres17-pgdump-secret-immich
             command: /scripts/list_dbs.sh
         containers:
           app:
