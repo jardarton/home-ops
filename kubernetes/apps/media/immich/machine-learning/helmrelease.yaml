@@ -48,12 +48,6 @@ spec:
                   name: immich-secret
               - configMapRef:
                   name: immich-config
-            env:
-              DB_URL:
-                valueFrom:
-                  secretKeyRef:
-                    name: immich-database-pguser-immich
-                    key: uri
     service:
       main:
         controller: immich-machine-learning
