@@ -73,7 +73,7 @@ spec:
               USERMAP_UID: "1000"
               USERMAP_GID: "100"
               # Configure filename format
-              PAPERLESS_FILENAME_FORMAT: "{{ correspondent }}/{{ document_type }}/{{ created_year }}/{{ created_year }}{{ created_month }}{{ title }}"
+              # PAPERLESS_FILENAME_FORMAT: "{{ correspondent }}/{{ document_type }}/{{ created_year }}/{{ created_year }}{{ created_month }}{{ title }}"
               # Configure admin user
               PAPERLESS_ADMIN_USER:
                 valueFrom:
