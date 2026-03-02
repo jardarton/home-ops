@@ -7,3 +7,4 @@ components:
 resources:
   # - ./csi-driver-nfs/ks.yaml TODO
   - ./intel-device-plugin-operator/ks.yaml
+  - ./registry/ks.yaml
