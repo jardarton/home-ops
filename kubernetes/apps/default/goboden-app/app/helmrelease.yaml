@@ -22,9 +22,9 @@ spec:
         containers:
           app:
             image:
-              repository: registry.${SECRET_DOMAIN}/goboden-app
+              repository: registry.system.svc.cluster.local:5000/goboden-app
               tag: main
-              digest: sha256:0000000000000000000000000000000000000000000000000000000000000000 # {"$imagepolicy": "flux-system:goboden-app:digest"}
+              digest: sha256:3e5f64d273139fdab291dfa6d526dd3ebb6586ea2514649ff7245ed3fa3f0f68 # {"$imagepolicy": "flux-system:goboden-app:digest"}
             resources:
               requests:
                 cpu: 10m
