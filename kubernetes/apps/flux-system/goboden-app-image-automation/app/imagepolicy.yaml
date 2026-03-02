@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imagepolicy-image-v1beta2.json
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: goboden-app
+spec:
+  imageRepositoryRef:
+    name: goboden-app
+  digestReflectionPolicy: Always
+  interval: 1m
+  filterTags:
+    pattern: ^main$
+  policy:
+    alphabetical:
+      order: asc
