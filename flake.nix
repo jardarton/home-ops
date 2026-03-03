@@ -50,8 +50,7 @@
               python3 -m venv .venv
               source .venv/bin/activate
               export KUBECONFIG="$PWD/kubeconfig"
-              export SOPS_AGE_KEY_FILE="$PWD/age.key"
-              export SOPS_AGE_KEY_FILE=$(rbw get "age-home-ops")
+              export SOPS_AGE_KEY=$(rbw get "age-home-ops")
               export TALOSCONFIG="$PWD/talos/clusterconfig/talosconfig"
               export database=pgcli -h 192.168.1.36 -p 5432 -u postgres -W
             '';

@@ -1,12 +1,9 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: default
+namespace: goboden
 components:
   - ../../components/common
 resources:
-  # - ./echo/ks.yaml
-  # - ./it-tools/ks.yaml
-  - ./flaresolverr/ks.yaml
-  - ./vaultwarden/ks.yaml
-  - ./paperless/ks.yaml
+  - ./goboden-app/ks.yaml
+  - ./postgres/ks.yaml

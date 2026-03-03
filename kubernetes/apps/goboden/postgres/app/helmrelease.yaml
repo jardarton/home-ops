@@ -1,0 +1,60 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/ocirepository-source-v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: goboden-postgres
+spec:
+  interval: 1h
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 18.5.1
+  url: oci://registry-1.docker.io/bitnamicharts/postgresql
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: goboden-postgres
+spec:
+  interval: 1h
+  valuesFrom:
+    - kind: Secret
+      name: goboden-postgres-secret
+      valuesKey: postgresPassword
+      targetPath: auth.postgresPassword
+    - kind: Secret
+      name: goboden-postgres-secret
+      valuesKey: userPassword
+      targetPath: auth.password
+  chartRef:
+    kind: OCIRepository
+    name: goboden-postgres
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    fullnameOverride: goboden-postgres
+    architecture: standalone
+    auth:
+      enablePostgresUser: true
+      username: goboden
+      database: goboden
+    primary:
+      persistence:
+        enabled: true
+        size: 10Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 1Gi
+    networkPolicy:
+      enabled: true
