@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: goboden-postgres-external
+  labels:
+    app.kubernetes.io/instance: goboden-postgres
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+spec:
+  type: LoadBalancer
+  internalTrafficPolicy: Cluster
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: postgres
+      port: 5432
+      protocol: TCP
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/instance: goboden-postgres
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
