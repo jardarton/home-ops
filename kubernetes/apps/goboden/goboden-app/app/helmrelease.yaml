@@ -40,11 +40,14 @@ spec:
             port: *port
     route:
       app:
-        hostnames: ["goboden.no"]
+        hostnames: ["goboden.no", "*.goboden.no"]
         parentRefs:
           - name: internal
             namespace: kube-system
             sectionName: https-goboden
+          - name: internal
+            namespace: kube-system
+            sectionName: https-goboden-wildcard
         rules:
           - backendRefs:
               - identifier: app

@@ -9,6 +9,7 @@ spec:
   commonName: goboden.no
   dnsNames:
     - goboden.no
+    - '*.goboden.no'
   issuerRef:
     name: goboden-local-ca
     kind: Issuer
