@@ -19,6 +19,7 @@ data:
             - https://*.goboden.no
             - https://platform.goboden.no
             - https://admin.goboden.no
+            - https://app.goboden.no
           allowed_methods:
             - GET
             - POST
@@ -35,29 +36,29 @@ data:
         base_url: http://goboden-kratos:4434/
 
     selfservice:
-      default_browser_return_url: https://goboden.no/
+      default_browser_return_url: https://app.goboden.no/admin/
       methods:
         password:
           enabled: true
       flows:
         error:
-          ui_url: https://goboden.no/admin/auth/error
+          ui_url: https://app.goboden.no/admin/auth/error
         settings:
-          ui_url: https://goboden.no/admin/auth/innstillinger
+          ui_url: https://app.goboden.no/admin/auth/innstillinger
           required_aal: highest_available
         recovery:
           enabled: false
-          ui_url: https://goboden.no/admin/auth/gjenopprett
+          ui_url: https://app.goboden.no/admin/auth/gjenopprett
         verification:
           enabled: false
-          ui_url: https://goboden.no/admin/auth/verifiser
+          ui_url: https://app.goboden.no/admin/auth/verifiser
         logout:
           after:
             default_browser_return_url: https://goboden.no/
         login:
-          ui_url: https://goboden.no/admin/auth/logg-inn
+          ui_url: https://app.goboden.no/admin/auth/logg-inn
         registration:
-          ui_url: https://goboden.no/admin/auth/registrer
+          ui_url: https://app.goboden.no/admin/auth/registrer
           after:
             password:
               hooks:

@@ -37,7 +37,7 @@ spec:
             env:
               API_LISTEN_ADDR: :8080
               KRATOS_PUBLIC_URL: http://goboden-kratos:4433
-              API_CORS_ALLOWED_ORIGINS: https://goboden.no,https://platform.goboden.no
+              API_CORS_ALLOWED_ORIGINS: https://goboden.no,https://platform.goboden.no,https://app.goboden.no
             envFrom:
               - secretRef:
                   name: goboden-api-secret
