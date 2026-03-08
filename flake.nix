@@ -52,7 +52,7 @@
               export KUBECONFIG="$PWD/kubeconfig"
               export SOPS_AGE_KEY=$(rbw get "age-home-ops")
               export TALOSCONFIG="$PWD/talos/clusterconfig/talosconfig"
-              export database=pgcli -h 192.168.1.36 -p 5432 -u postgres -W
+              export database="pgcli -h 192.168.1.36 -p 5432 -u postgres -W"
             '';
 
           };
