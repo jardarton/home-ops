@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: registry-gc
+spec:
+  schedule: "0 4 * * 0" # weekly, Sunday 04:00
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: gc
+              image: docker.io/library/registry:2.8.3
+              command: ["/bin/registry"]
+              args:
+                - garbage-collect
+                - /etc/docker/registry/config.yml
+                - --delete-untagged
+              env:
+                - name: REGISTRY_HTTP_RELATIVEURLS
+                  value: "true"
+                - name: REGISTRY_STORAGE_DELETE_ENABLED
+                  value: "true"
+              volumeMounts:
+                - name: data
+                  mountPath: /var/lib/registry
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: registry
