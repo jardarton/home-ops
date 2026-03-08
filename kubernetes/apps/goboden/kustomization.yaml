@@ -5,5 +5,9 @@ namespace: goboden
 components:
   - ../../components/common
 resources:
-  - ./goboden-app/ks.yaml
   - ./postgres/ks.yaml
+  - ./goboden-kratos/ks.yaml
+  - ./goboden-api/ks.yaml
+  - ./goboden-public/ks.yaml
+  - ./goboden-tenant-admin/ks.yaml
+  - ./goboden-platform-admin/ks.yaml

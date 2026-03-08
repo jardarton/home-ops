@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/gitrepository-source-v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: flux-system-automation
+spec:
+  interval: 1m
+  ref:
+    branch: main
+  secretRef:
+    name: flux-image-automation
+  url: https://github.com/jardt/home-ops.git

@@ -1,0 +1,10 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/imagerepository-image-v1beta2.json
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: goboden-tenant-admin
+spec:
+  image: registry.system.svc.cluster.local:5000/goboden-tenant-admin
+  insecure: true
+  interval: 1m

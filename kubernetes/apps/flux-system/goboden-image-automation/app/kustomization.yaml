@@ -1,0 +1,16 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./gitrepository.yaml
+  - ./imagerepository-api.yaml
+  - ./imagerepository-public.yaml
+  - ./imagerepository-tenant-admin.yaml
+  - ./imagerepository-platform-admin.yaml
+  - ./imagepolicy-api.yaml
+  - ./imagepolicy-public.yaml
+  - ./imagepolicy-tenant-admin.yaml
+  - ./imagepolicy-platform-admin.yaml
+  - ./imageupdateautomation.yaml
+  - ./secret.sops.yaml
