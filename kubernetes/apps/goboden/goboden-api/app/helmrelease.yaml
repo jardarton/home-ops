@@ -24,7 +24,7 @@ spec:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-api
               tag: main
-              digest: "sha256:eafcb9fb01fc62d0dcb5e150cd24b84db069304a13bf6514be4f1bb8338e7146" # {"$imagepolicy": "flux-system:goboden-api:digest"}
+              digest: "sha256:8530cfd3998db5eadb1281c0e53fe516f296c81cc8735fc3dc68b7d563fc92b6" # {"$imagepolicy": "flux-system:goboden-api:digest"}
             command: [kratos-dev-users, seed]
             env:
               KRATOS_ADMIN_URL: http://goboden-kratos:4434
@@ -33,7 +33,7 @@ spec:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-api
               tag: main
-              digest: "sha256:eafcb9fb01fc62d0dcb5e150cd24b84db069304a13bf6514be4f1bb8338e7146" # {"$imagepolicy": "flux-system:goboden-api:digest"}
+              digest: "sha256:8530cfd3998db5eadb1281c0e53fe516f296c81cc8735fc3dc68b7d563fc92b6" # {"$imagepolicy": "flux-system:goboden-api:digest"}
             env:
               API_LISTEN_ADDR: :8080
               KRATOS_PUBLIC_URL: http://goboden-kratos:4433
