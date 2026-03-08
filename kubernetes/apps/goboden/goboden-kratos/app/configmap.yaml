@@ -75,6 +75,11 @@ data:
       cipher:
         - $SECRETS_CIPHER
 
+    session:
+      cookie:
+        domain: goboden.no
+        same_site: Lax
+
     identity:
       default_schema_id: default
       schemas:
