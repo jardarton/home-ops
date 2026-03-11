@@ -17,8 +17,6 @@ spec:
   dependsOn:
     - name: goboden-postgres
       namespace: goboden
-    - name: goboden-kratos
-      namespace: goboden
   interval: 1h
   path: ./kubernetes/apps/goboden/goboden-api/app
   postBuild:

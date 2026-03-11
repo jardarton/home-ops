@@ -6,7 +6,6 @@ components:
   - ../../components/common
 resources:
   - ./postgres/ks.yaml
-  - ./goboden-kratos/ks.yaml
   - ./goboden-api/ks.yaml
   - ./goboden-public/ks.yaml
   - ./goboden-tenant-admin/ks.yaml

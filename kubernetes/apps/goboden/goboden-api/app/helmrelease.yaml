@@ -20,14 +20,16 @@ spec:
       goboden-api:
         strategy: RollingUpdate
         initContainers:
-          kratos-seed:
+          migrate:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-api
               tag: main
               digest: "sha256:8530cfd3998db5eadb1281c0e53fe516f296c81cc8735fc3dc68b7d563fc92b6" # {"$imagepolicy": "flux-system:goboden-api:digest"}
-            command: [kratos-dev-users, seed]
-            env:
-              KRATOS_ADMIN_URL: http://goboden-kratos:4434
+            command: [pnpm]
+            args: ['db:migrate']
+            envFrom:
+              - secretRef:
+                  name: goboden-api-secret
         containers:
           app:
             image:
@@ -35,15 +37,15 @@ spec:
               tag: main
               digest: "sha256:8530cfd3998db5eadb1281c0e53fe516f296c81cc8735fc3dc68b7d563fc92b6" # {"$imagepolicy": "flux-system:goboden-api:digest"}
             env:
-              API_LISTEN_ADDR: :8080
-              KRATOS_PUBLIC_URL: http://goboden-kratos:4433
+              PORT: &port 8080
+              BETTER_AUTH_URL: https://api.goboden.no
               API_CORS_ALLOWED_ORIGINS: https://goboden.no,https://platform.goboden.no,https://app.goboden.no
             envFrom:
               - secretRef:
                   name: goboden-api-secret
             ports:
               - name: http
-                containerPort: &port 8080
+                containerPort: *port
             resources:
               requests:
                 cpu: 10m
