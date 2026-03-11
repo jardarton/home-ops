@@ -27,9 +27,7 @@ spec:
               digest: "sha256:6a6f83dc3c6fd0715dbdf971725321e9738b187c3ff5143a58efa09c86ab30d5" # {"$imagepolicy": "flux-system:goboden-public:digest"}
             env:
               PORT: &port 3000
-            envFrom:
-              - secretRef:
-                  name: goboden-public-secret
+              API_INTERNAL_URL: http://goboden-api:8080
             resources:
               requests:
                 cpu: 10m
