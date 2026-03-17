@@ -24,7 +24,7 @@ spec:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-tenant-admin
               tag: main
-              digest: "sha256:49446127abdd76e9740d5ec83f8b715fee1f1c8e3766b1e0588ed3c24c0cda00" # {"$imagepolicy": "flux-system:goboden-tenant-admin:digest"}
+              digest: "sha256:649344a7ad28c2fcf58c1d6d36a77805dffe2d7acc945bdb8776b2ad9f93ad2e" # {"$imagepolicy": "flux-system:goboden-tenant-admin:digest"}
             ports:
               - name: http
                 containerPort: &port 80
