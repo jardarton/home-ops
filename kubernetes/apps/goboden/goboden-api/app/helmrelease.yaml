@@ -24,7 +24,7 @@ spec:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-api
               tag: main
-              digest: "sha256:3cc18a38b071247dca346392214787e06dcc65da2ba91dd42c4ee504a8ee2017" # {"$imagepolicy": "flux-system:goboden-api:digest"}
+              digest: "sha256:3427b06c17e9afcdcbbd00e4603e0c3b4d4415b5ae413922964f88b9a42b59e8" # {"$imagepolicy": "flux-system:goboden-api:digest"}
             command: [pnpm]
             args: ['db:migrate']
             envFrom:
@@ -35,7 +35,7 @@ spec:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-api
               tag: main
-              digest: "sha256:3cc18a38b071247dca346392214787e06dcc65da2ba91dd42c4ee504a8ee2017" # {"$imagepolicy": "flux-system:goboden-api:digest"}
+              digest: "sha256:3427b06c17e9afcdcbbd00e4603e0c3b4d4415b5ae413922964f88b9a42b59e8" # {"$imagepolicy": "flux-system:goboden-api:digest"}
             env:
               PORT: &port 8080
               BETTER_AUTH_URL: https://api.goboden.no
