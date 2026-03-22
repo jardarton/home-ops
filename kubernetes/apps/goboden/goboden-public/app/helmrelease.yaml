@@ -24,7 +24,7 @@ spec:
             image:
               repository: registry.system.svc.cluster.local:5000/goboden-public
               tag: main
-              digest: "sha256:4c6b0977d25d8804af66213e79655bf1a727eaec37ddf858dd36cfe67dfe7f0a" # {"$imagepolicy": "flux-system:goboden-public:digest"}
+              digest: "sha256:461634ee1e21fff3f587a2504e4e7e68d92169efeac467edb75612b7219e9e3c" # {"$imagepolicy": "flux-system:goboden-public:digest"}
             env:
               PORT: &port 3000
               API_INTERNAL_URL: http://goboden-api:8080
