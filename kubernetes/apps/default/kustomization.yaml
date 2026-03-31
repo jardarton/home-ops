@@ -9,5 +9,6 @@ resources:
   # - ./it-tools/ks.yaml
   - ./flaresolverr/ks.yaml
   - ./n8n/ks.yaml
+  - ./n8n-mcp/ks.yaml
   - ./vaultwarden/ks.yaml
   - ./paperless/ks.yaml
