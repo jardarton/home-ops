@@ -29,8 +29,8 @@ spec:
     namespace: flux-system
   wait: true
   dependsOn:
-    - name: immich-database
-      namespace: media
+    - name: cloudnative-pg-cluster-immich
+      namespace: database
     - name: rediscluster-ot-standalone
       namespace: database
     - name: keda
