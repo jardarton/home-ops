@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: music-assistant
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      music-assistant:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/music-assistant/server
+              tag: 2.5.8@sha256:4ed1ce8b5422119c78ac6143be2c0935a0189b18d69d8ea5b5f830632902bf75
+            resources:
+              requests:
+                cpu: 15m
+                memory: 1Gi
+              limits:
+                memory: 1Gi
+            env:
+              TZ: Europe/Oslo
+        pod:
+          hostNetwork: true #airplay not working without?
+          dnsPolicy: ClusterFirstWithHostNet
+          annotations:
+            k8s.v1.cni.cncf.io/networks: |
+              [{
+                "name":"macvlan-conf",
+                "namespace": "network",
+                "ips": ["192.168.1.39/24"],
+                "mac": "f2-ca-66-3d-3b-f4"
+                      }]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 100
+            fsGroup: 100
+            fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: 192.168.1.37
+        ports:
+          http:
+            port: 80
+            targetPort: 8095
+          http2:
+            port: 1780
+          snapserver:
+            port: 1704
+          stream:
+            port: 8098
+    route:
+      app:
+        hostnames:
+          - "musikk.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+    persistence:
+      data:
+        existingClaim: "{{ .Release.Name }}"
+      media:
+        type: nfs
+        server: 192.168.1.10
+        path: /mnt/wolf/musikk
+        globalMounts:
+          - path: /music
+            readOnly: true
+      tmpfs:
+        type: emptyDir
+        globalMounts:
+          - path: /.audio
+            subPath: .audio
