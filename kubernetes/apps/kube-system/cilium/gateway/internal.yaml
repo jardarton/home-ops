@@ -32,25 +32,3 @@ spec:
         certificateRefs:
           - kind: Secret
             name: ${SECRET_DOMAIN/./-}-production-tls
-    - name: https-goboden
-      protocol: HTTPS
-      port: 443
-      hostname: goboden.no
-      allowedRoutes:
-        namespaces:
-          from: All
-      tls:
-        certificateRefs:
-          - kind: Secret
-            name: goboden-local-tls
-    - name: https-goboden-wildcard
-      protocol: HTTPS
-      port: 443
-      hostname: "*.goboden.no"
-      allowedRoutes:
-        namespaces:
-          from: All
-      tls:
-        certificateRefs:
-          - kind: Secret
-            name: goboden-local-tls
