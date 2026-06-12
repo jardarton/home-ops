@@ -98,6 +98,7 @@ spec:
         ports:
           http:
             port: *webuiPort
+            primary: true
           bittorrent:
             enabled: true
             port: *torrentPort
