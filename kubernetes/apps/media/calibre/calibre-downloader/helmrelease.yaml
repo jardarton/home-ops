@@ -39,6 +39,8 @@ spec:
               DEFAULT_SLEEP: 15
               USE_BOOK_TITLE: true
               LOG_LEVEL: debug
+              LOG_ROOT: /config/logs
+              TMP_DIR: /config/tmp
               TZ: Europe/Oslo
               EXT_BYPASSER_URL: http://flaresolverr.default.svc.cluster.local:8191
             probes:
@@ -98,15 +100,6 @@ spec:
         existingClaim: *app
         globalMounts:
           - path: /config
-      tmpfs:
-        type: emptyDir
-        globalMounts:
-          - path: /tmp
-            subPath: tmp
-          - path: /app/downloaded_files
-            subPath: downloads
-          - path: /var/log/cwa-book-downloader/
-            subPath: logs
       ingest:
         type: nfs
         server: 192.168.1.10
