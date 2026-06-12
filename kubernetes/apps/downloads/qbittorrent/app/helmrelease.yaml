@@ -29,8 +29,7 @@ spec:
               - /bin/sh
               - -ec
               - |
-                apk add --no-cache curl unzip
-                curl -fsSL -o /tmp/vuetorrent.zip https://github.com/VueTorrent/VueTorrent/releases/download/v2.34.0/vuetorrent.zip
+                wget -O /tmp/vuetorrent.zip https://github.com/VueTorrent/VueTorrent/releases/download/v2.34.0/vuetorrent.zip
                 rm -rf /vuetorrent/*
                 unzip -q /tmp/vuetorrent.zip -d /tmp
                 cp -a /tmp/vuetorrent/. /vuetorrent/
