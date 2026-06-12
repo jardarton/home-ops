@@ -17,13 +17,31 @@ metadata:
   name: rook-ceph-rbd-csi-nodeplugin
 rules:
   - apiGroups: [""]
-    resources: ["nodes"]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
     verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -45,6 +63,9 @@ metadata:
   name: rook-ceph-rbd-csi-ctrlplugin
 rules:
   - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: [""]
@@ -59,8 +80,20 @@ rules:
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    verbs: ["create"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["storageclasses", "volumeattachments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes", "volumeattributesclasses"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
@@ -86,47 +119,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: rook-ceph-rbd-csi-ctrlplugin
-subjects:
-  - kind: ServiceAccount
-    name: rbd-ctrlplugin-sa
-    namespace: rook-ceph
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: rook-ceph-rbd-csi-secrets
-  namespace: rook-ceph
-rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    resourceNames:
-      - rook-csi-rbd-node
-      - rook-csi-rbd-provisioner
-    verbs: ["get"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: rook-ceph-rbd-csi-nodeplugin-secrets
-  namespace: rook-ceph
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: rook-ceph-rbd-csi-secrets
-subjects:
-  - kind: ServiceAccount
-    name: rbd-nodeplugin-sa
-    namespace: rook-ceph
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: rook-ceph-rbd-csi-ctrlplugin-secrets
-  namespace: rook-ceph
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: rook-ceph-rbd-csi-secrets
 subjects:
   - kind: ServiceAccount
     name: rbd-ctrlplugin-sa
