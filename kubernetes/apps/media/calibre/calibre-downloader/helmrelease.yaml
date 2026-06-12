@@ -19,8 +19,11 @@ spec:
   values:
     defaultPodOptions:
       securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
+        runAsNonRoot: true
         seccompProfile: {type: RuntimeDefault}
     controllers:
       ${APP}:
@@ -32,8 +35,6 @@ spec:
             env:
               FLASK_PORT: &port 8084
               INGEST_DIR: &ingest /cwa-book-ingest
-              PUID: 911
-              PGID: 911
               BOOK_LANGUAGE: en
               DEFAULT_SLEEP: 15
               USE_BOOK_TITLE: true
@@ -71,7 +72,7 @@ spec:
               capabilities:
                 drop:
                   - ALL
-              allowPrivilegeEscalation: true
+              allowPrivilegeEscalation: false
     service:
       app:
         controller: *app
