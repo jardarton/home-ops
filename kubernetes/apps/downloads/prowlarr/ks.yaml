@@ -8,6 +8,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  components:
+    - ../../../../components/volsync-existing
   interval: 1h
   path: ./kubernetes/apps/downloads/prowlarr/app
   postBuild:
@@ -16,6 +18,9 @@ spec:
         kind: Secret
     substitute:
       APP: *app
+      VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_PUID: "993"
+      VOLSYNC_PGID: "995"
   prune: true
   retryInterval: 2m
   sourceRef:
