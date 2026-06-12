@@ -10,3 +10,4 @@ resources:
   - ./lidarr/ks.yaml
   - ./prowlarr/ks.yaml
   - ./cross-seed/ks.yaml
+  - ./qbittorrent/ks.yaml

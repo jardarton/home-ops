@@ -1,0 +1,131 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: qbittorrent
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      qbittorrent:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          vuetorrent:
+            image:
+              repository: docker.io/library/alpine
+              tag: 3.22
+            command:
+              - /bin/sh
+              - -ec
+              - |
+                apk add --no-cache curl unzip
+                curl -fsSL -o /tmp/vuetorrent.zip https://github.com/VueTorrent/VueTorrent/releases/download/v2.34.0/vuetorrent.zip
+                rm -rf /vuetorrent/*
+                unzip -q /tmp/vuetorrent.zip -d /tmp
+                cp -a /tmp/vuetorrent/. /vuetorrent/
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              runAsUser: 0
+              capabilities: {drop: ["ALL"]}
+          config:
+            image:
+              repository: docker.io/library/alpine
+              tag: 3.22
+            command:
+              - /bin/sh
+              - -ec
+              - |
+                sed -i 's#^WebUI\\RootFolder=.*#WebUI\\RootFolder=/vuetorrent#' /config/qBittorrent/config/qBittorrent.conf
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              runAsUser: 993
+              runAsGroup: 995
+              capabilities: {drop: ["ALL"]}
+        containers:
+          app:
+            image:
+              repository: ghcr.io/home-operations/qbittorrent
+              tag: 5.2.1@sha256:8d58d9ad18a1fb5e556e68bde7ac06046847cc97069257f01d2e1ec0d27ff019
+            env:
+              TZ: Europe/Oslo
+              QBT_WEBUI_PORT: &webuiPort 8888
+              QBT_TORRENTING_PORT: &torrentPort 56855
+            probes:
+              liveness:
+                enabled: true
+              readiness:
+                enabled: true
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 5
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              runAsNonRoot: true
+              capabilities: {drop: ["ALL"]}
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 993
+        runAsGroup: 995
+        fsGroup: 995
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        ports:
+          http:
+            port: *webuiPort
+          bittorrent:
+            enabled: true
+            port: *torrentPort
+            protocol: TCP
+          bittorrent-udp:
+            enabled: true
+            port: *torrentPort
+            protocol: UDP
+    route:
+      app:
+        hostnames: ["torrent.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+    persistence:
+      config:
+        type: nfs
+        server: 192.168.1.10
+        path: /mnt/wolf/arr/qbittorrent
+        globalMounts:
+          - path: /config
+      torrents:
+        type: nfs
+        server: 192.168.1.10
+        path: /mnt/wolf/torrents
+        globalMounts:
+          - path: /mnt/wolf/torrents
+      vuetorrent:
+        type: emptyDir
+        globalMounts:
+          - path: /vuetorrent
+      tmp:
+        type: emptyDir
