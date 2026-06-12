@@ -25,10 +25,6 @@ spec:
             image:
               repository: ghcr.io/home-operations/radarr
               tag: rolling@sha256:0756fffa75b30219e3dbac8d027a5389f53cbb34ae83fa4b0976c1b0524c8eb1
-            command:
-              - /app/bin/Radarr
-              - --nobrowser
-              - --data=/mnt/wolf/arr/radarr
             env:
               RADARR__LOG__ANALYTICSENABLED: "false"
               RADARR__SERVER__PORT: &port 7878
@@ -77,6 +73,10 @@ spec:
             namespace: kube-system
             sectionName: https
     persistence:
+      config:
+        existingClaim: radarr
+        globalMounts:
+          - path: /config
       wolf:
         type: nfs
         server: 192.168.1.10
