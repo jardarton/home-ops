@@ -19,11 +19,8 @@ spec:
   values:
     defaultPodOptions:
       securityContext:
-        runAsUser: 911
-        runAsGroup: 911
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
-        runAsNonRoot: false
         seccompProfile: {type: RuntimeDefault}
     controllers:
       ${APP}:
@@ -35,28 +32,34 @@ spec:
             env:
               FLASK_PORT: &port 8084
               INGEST_DIR: &ingest /cwa-book-ingest
-              UID: 911
-              GID: 911
+              PUID: 911
+              PGID: 911
               BOOK_LANGUAGE: en
               DEFAULT_SLEEP: 15
               USE_BOOK_TITLE: true
               LOG_LEVEL: debug
               TZ: Europe/Oslo
               EXT_BYPASSER_URL: http://flaresolverr.default.svc.cluster.local:8191
-            command:
-              - /bin/sh
-              - -c
-              - |
-                gunicorn -t 300 -b 0.0.0.0:8084 app:app
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /request/api/status
+                    path: /api/health
                     port: *port
+                  timeoutSeconds: 5
               readiness: *probes
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: *port
+                  failureThreshold: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 5
             resources:
               requests:
                 cpu: 10m
@@ -89,6 +92,11 @@ spec:
             #     timeouts:
             #       request: 0s
     persistence:
+      config:
+        enabled: true
+        existingClaim: *app
+        globalMounts:
+          - path: /config
       tmpfs:
         type: emptyDir
         globalMounts:
