@@ -93,20 +93,10 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
-        type: LoadBalancer
-        externalTrafficPolicy: Local
         ports:
           http:
             port: *webuiPort
             primary: true
-          bittorrent:
-            enabled: true
-            port: *torrentPort
-            protocol: TCP
-          bittorrent-udp:
-            enabled: true
-            port: *torrentPort
-            protocol: UDP
     route:
       app:
         hostnames: ["torrent.${SECRET_DOMAIN}"]
