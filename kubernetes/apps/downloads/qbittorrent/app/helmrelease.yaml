@@ -58,6 +58,10 @@ spec:
             image:
               repository: ghcr.io/home-operations/qbittorrent
               tag: 5.2.1@sha256:8d58d9ad18a1fb5e556e68bde7ac06046847cc97069257f01d2e1ec0d27ff019
+            args:
+              - --profile=/config
+              - --webui-port=8888
+              - --confirm-legal-notice
             env:
               TZ: Europe/Oslo
               QBT_WEBUI_PORT: &webuiPort 8888
