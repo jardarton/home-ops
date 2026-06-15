@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: hermes
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      hermes:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          securityContext:
+            fsGroup: 10000
+            fsGroupChangePolicy: OnRootMismatch
+            runAsGroup: 10000
+            runAsUser: 10000
+        containers:
+          app:
+            image: &image
+              repository: nousresearch/hermes-agent
+              tag: v2026.6.5@sha256:9ad3b04ec916ea2c2da22358fd43b024c788d74073210695af88bfc2e63869b4
+            args: ["gateway", "run", "--no-supervise"]
+            env: &env
+              HERMES_HOME: /opt/data
+              HOME: /opt/data
+              TZ: Europe/Oslo
+            ports:
+              - containerPort: &gatewayPort 8642
+                name: gateway
+                protocol: TCP
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+          dashboard:
+            image: *image
+            args: ["dashboard", "--host", "0.0.0.0", "--insecure"]
+            env:
+              !!merge <<: *env
+              GATEWAY_HEALTH_URL: http://localhost:8642
+            ports:
+              - containerPort: &httpPort 9119
+                name: http
+                protocol: TCP
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *httpPort
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 1Gi
+    persistence:
+      data:
+        existingClaim: hermes
+        advancedMounts:
+          hermes:
+            app:
+              - path: /opt/data
+            dashboard:
+              - path: /opt/data
+    service:
+      app:
+        ports:
+          gateway:
+            port: *gatewayPort
+          http:
+            port: *httpPort
+    route:
+      app:
+        hostnames:
+          - "hermes.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *httpPort

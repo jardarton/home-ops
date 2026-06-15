@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./cert-manager
+  - ./database
+  - ./default
+  - ./downloads
+  - ./flux-system
+  - ./home
+  - ./kube-system
+  - ./llm
+  - ./media
+  - ./network
+  - ./nfs-system
+  - ./observability
+  - ./openebs-system
+  - ./rook-ceph
+  - ./system
+  - ./volsync-system
