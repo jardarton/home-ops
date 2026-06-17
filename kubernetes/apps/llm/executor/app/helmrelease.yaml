@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: executor
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      executor:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          securityContext:
+            fsGroup: 10000
+            fsGroupChangePolicy: OnRootMismatch
+            runAsGroup: 10000
+            runAsUser: 10000
+        containers:
+          app:
+            image:
+              repository: ghcr.io/rhyssullivan/executor-selfhost
+              tag: latest@sha256:5d61b29ece9972cdcad519355c2a2fd1b376b9e259270ea2cf90dd4497f95fcb
+            env:
+              EXECUTOR_WEB_BASE_URL: https://executor.${SECRET_DOMAIN}
+              EXECUTOR_ALLOW_LOCAL_NETWORK: "true"
+              TZ: Europe/Oslo
+            ports:
+              - containerPort: &httpPort 4788
+                name: http
+                protocol: TCP
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/health
+                    port: *httpPort
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+                  initialDelaySeconds: 20
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                memory: 2Gi
+    persistence:
+      data:
+        existingClaim: executor
+        advancedMounts:
+          executor:
+            app:
+              - path: /data
+    service:
+      app:
+        ports:
+          http:
+            port: *httpPort
+    route:
+      app:
+        hostnames:
+          - "executor.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: *httpPort
