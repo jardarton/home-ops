@@ -33,27 +33,18 @@ spec:
               repository: nousresearch/hermes-agent
               tag: v2026.6.5@sha256:9ad3b04ec916ea2c2da22358fd43b024c788d74073210695af88bfc2e63869b4
             args: ["gateway", "run", "--no-supervise"]
-            env: &env
+            env:
               HERMES_HOME: /opt/data
               HOME: /opt/data
+              HERMES_DASHBOARD: "true"
+              HERMES_DASHBOARD_HOST: 0.0.0.0
+              HERMES_DASHBOARD_INSECURE: "true"
+              GATEWAY_HEALTH_URL: http://localhost:8642
               TZ: Europe/Oslo
             ports:
               - containerPort: &gatewayPort 8642
                 name: gateway
                 protocol: TCP
-            resources:
-              requests:
-                cpu: 100m
-                memory: 512Mi
-              limits:
-                memory: 2Gi
-          dashboard:
-            image: *image
-            args: ["dashboard", "--host", "0.0.0.0", "--insecure"]
-            env:
-              !!merge <<: *env
-              GATEWAY_HEALTH_URL: http://localhost:8642
-            ports:
               - containerPort: &httpPort 9119
                 name: http
                 protocol: TCP
@@ -74,15 +65,13 @@ spec:
                 cpu: 100m
                 memory: 512Mi
               limits:
-                memory: 1Gi
+                memory: 2Gi
     persistence:
       data:
         existingClaim: hermes
         advancedMounts:
           hermes:
             app:
-              - path: /opt/data
-            dashboard:
               - path: /opt/data
     service:
       app:
