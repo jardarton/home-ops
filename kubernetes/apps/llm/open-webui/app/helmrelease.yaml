@@ -2,7 +2,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: hermes
+  name: open-webui
 spec:
   interval: 30m
   chartRef:
@@ -18,40 +18,25 @@ spec:
       retries: 3
   values:
     controllers:
-      hermes:
+      open-webui:
         annotations:
           reloader.stakater.com/auto: "true"
-        pod:
-          securityContext:
-            fsGroup: 10000
-            fsGroupChangePolicy: OnRootMismatch
-            runAsGroup: 10000
-            runAsUser: 10000
         containers:
           app:
-            image: &image
-              repository: nousresearch/hermes-agent
-              tag: v2026.6.5@sha256:9ad3b04ec916ea2c2da22358fd43b024c788d74073210695af88bfc2e63869b4
-            args: ["gateway", "run", "--no-supervise"]
+            image:
+              repository: ghcr.io/open-webui/open-webui
+              tag: 0.9.6
             env:
-              API_SERVER_ENABLED: "true"
-              API_SERVER_HOST: 0.0.0.0
-              API_SERVER_MODEL_NAME: hermes-agent
-              HERMES_HOME: /opt/data
-              HOME: /opt/data
-              HERMES_DASHBOARD: "true"
-              HERMES_DASHBOARD_HOST: 0.0.0.0
-              HERMES_DASHBOARD_INSECURE: "true"
-              GATEWAY_HEALTH_URL: http://localhost:8642
+              ENABLE_OLLAMA_API: "false"
+              ENABLE_OPENAI_API: "true"
+              OPENAI_API_BASE_URL: http://hermes.llm.svc.cluster.local:8642/v1
               TZ: Europe/Oslo
+              WEBUI_URL: https://ai.${SECRET_DOMAIN}
             envFrom:
               - secretRef:
-                  name: hermes-secret
+                  name: open-webui-secret
             ports:
-              - containerPort: &gatewayPort 8642
-                name: gateway
-                protocol: TCP
-              - containerPort: &httpPort 9119
+              - containerPort: &httpPort 8080
                 name: http
                 protocol: TCP
             probes:
@@ -60,11 +45,12 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /
+                    path: /health
                     port: *httpPort
                   periodSeconds: 30
                   timeoutSeconds: 5
                   failureThreshold: 5
+                  initialDelaySeconds: 30
               readiness: *probes
             resources:
               requests:
@@ -74,22 +60,20 @@ spec:
                 memory: 2Gi
     persistence:
       data:
-        existingClaim: hermes
+        existingClaim: open-webui
         advancedMounts:
-          hermes:
+          open-webui:
             app:
-              - path: /opt/data
+              - path: /app/backend/data
     service:
       app:
         ports:
-          gateway:
-            port: *gatewayPort
           http:
             port: *httpPort
     route:
       app:
         hostnames:
-          - "hermes.${SECRET_DOMAIN}"
+          - "ai.${SECRET_DOMAIN}"
         parentRefs:
           - name: internal
             namespace: kube-system
