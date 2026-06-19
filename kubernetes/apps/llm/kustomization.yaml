@@ -8,6 +8,7 @@ resources:
   - ./executor/ks.yaml
   - ./ha-mcp/ks.yaml
   - ./github-mcp/ks.yaml
+  - ./kubectl-mcp/ks.yaml
   - ./hermes/ks.yaml
   - ./johan/ks.yaml
   - ./makkapakka/ks.yaml
