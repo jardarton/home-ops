@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: arr-mcp
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      arr-mcp:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/rwlove/arr-mcp
+              # Upstream mcp-arr does not publish an image. This image is v1.6.5
+              # with aplaceforallmystuff/mcp-arr#22 applied to avoid HTTP transport deadlock.
+              tag: v1.6.5-deadlockfix1@sha256:841c0fd73c89ccb37573db9d376aed95e2f8bf90c338309e12d70e3334c7b43e
+            env:
+              MCP_TRANSPORT: http
+              HOST: 0.0.0.0
+              PORT: &httpPort 3000
+              SONARR_URL: http://sonarr.downloads.svc.cluster.local:8989
+              RADARR_URL: http://radarr.downloads.svc.cluster.local:7878
+              LIDARR_URL: http://lidarr.downloads.svc.cluster.local:8686
+              PROWLARR_URL: http://prowlarr.downloads.svc.cluster.local:9696
+              TZ: Europe/Oslo
+            envFrom:
+              - secretRef:
+                  name: arr-mcp-secret
+            ports:
+              - containerPort: *httpPort
+                name: http
+                protocol: TCP
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 256Mi
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            fsGroup: 1001
+            fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        ports:
+          http:
+            port: *httpPort
+    route:
+      app:
+        hostnames:
+          - "arr-mcp.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /mcp
+            backendRefs:
+              - identifier: app
+                port: *httpPort
