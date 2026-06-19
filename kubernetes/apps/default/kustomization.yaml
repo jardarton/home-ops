@@ -8,6 +8,7 @@ resources:
   # - ./echo/ks.yaml
   # - ./it-tools/ks.yaml
   - ./actual/ks.yaml
+  - ./changedetection/ks.yaml
   - ./flaresolverr/ks.yaml
   - ./n8n/ks.yaml
   - ./vaultwarden/ks.yaml
