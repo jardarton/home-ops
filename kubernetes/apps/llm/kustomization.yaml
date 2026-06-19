@@ -5,6 +5,7 @@ namespace: llm
 components:
   - ../../components/common
 resources:
+  - ./actual-mcp/ks.yaml
   - ./executor/ks.yaml
   - ./ha-mcp/ks.yaml
   - ./github-mcp/ks.yaml
