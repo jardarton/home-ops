@@ -14,3 +14,4 @@ resources:
   - ./johan/ks.yaml
   - ./makkapakka/ks.yaml
   - ./open-webui/ks.yaml
+  - ./camofox-browser/ks.yaml

@@ -1,0 +1,86 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app camofox-browser
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      camofox-browser:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/redf0x1/camofox-browser
+              tag: 2.4.6@sha256:41e79fb61d50f0a8292b2a51c81ebcb0a2be24d89e9eac970edd12613006ced7
+            env:
+              CAMOFOX_PORT: &httpPort 9377
+              PORT: *httpPort
+              CAMOFOX_PROFILES_DIR: /home/node/.camofox/profiles
+              TZ: Europe/Oslo
+            ports:
+              - containerPort: *httpPort
+                name: http
+                protocol: TCP
+              - containerPort: &vncPort 6080
+                name: vnc
+                protocol: TCP
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *httpPort
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 5
+                  initialDelaySeconds: 30
+              readiness: *probes
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+    persistence:
+      data:
+        existingClaim: *app
+        advancedMounts:
+          camofox-browser:
+            app:
+              - path: /home/node/.camofox
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *httpPort
+          vnc:
+            port: *vncPort
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *httpPort
