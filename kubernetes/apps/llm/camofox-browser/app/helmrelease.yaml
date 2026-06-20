@@ -32,10 +32,9 @@ spec:
               - -c
               - |
                 mkdir -p /home/node/.camofox/cookies /home/node/.camofox/profiles
-                chown -R 1000:1000 /home/node/.camofox
             securityContext:
-              runAsUser: 0
-              runAsGroup: 0
+              runAsUser: 1000
+              runAsGroup: 1000
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: {drop: ["ALL"]}
@@ -87,6 +86,8 @@ spec:
         existingClaim: *app
         advancedMounts:
           camofox-browser:
+            init-permissions:
+              - path: /home/node/.camofox
             app:
               - path: /home/node/.camofox
     service:
