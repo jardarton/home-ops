@@ -44,7 +44,9 @@ spec:
               repository: ghcr.io/redf0x1/camofox-browser
               tag: 2.4.6@sha256:41e79fb61d50f0a8292b2a51c81ebcb0a2be24d89e9eac970edd12613006ced7
             env:
+              CAMOFOX_HOST: 0.0.0.0
               CAMOFOX_PORT: &httpPort 9377
+              HOST: 0.0.0.0
               PORT: *httpPort
               CAMOFOX_PROFILES_DIR: /home/node/.camofox/profiles
               TZ: Europe/Oslo
