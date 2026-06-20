@@ -22,6 +22,23 @@ spec:
       camofox-browser:
         annotations:
           reloader.stakater.com/auto: "true"
+        initContainers:
+          init-permissions:
+            image:
+              repository: docker.io/library/busybox
+              tag: 1.37.0
+            command:
+              - sh
+              - -c
+              - |
+                mkdir -p /home/node/.camofox/cookies /home/node/.camofox/profiles
+                chown -R 1000:1000 /home/node/.camofox
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
         containers:
           app:
             image:
@@ -58,6 +75,13 @@ spec:
                 memory: 512Mi
               limits:
                 memory: 2Gi
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
     persistence:
       data:
         existingClaim: *app
