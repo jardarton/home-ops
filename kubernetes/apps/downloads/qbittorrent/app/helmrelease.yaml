@@ -46,6 +46,7 @@ spec:
               - /bin/sh
               - -ec
               - |
+                rm -f /config/qBittorrent/config/lockfile /config/qBittorrent/config/ipc-socket
                 sed -i 's#^WebUI\\RootFolder=.*#WebUI\\RootFolder=/vuetorrent#' /config/qBittorrent/config/qBittorrent.conf
             securityContext:
               allowPrivilegeEscalation: false
