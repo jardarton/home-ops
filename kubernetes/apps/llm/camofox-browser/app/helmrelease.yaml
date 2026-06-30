@@ -50,6 +50,9 @@ spec:
               PORT: *httpPort
               CAMOFOX_PROFILES_DIR: /home/node/.camofox/profiles
               TZ: Europe/Oslo
+            envFrom:
+              - secretRef:
+                  name: camofox-browser-secret
             ports:
               - containerPort: *httpPort
                 name: http
