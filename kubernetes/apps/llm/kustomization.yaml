@@ -10,6 +10,7 @@ resources:
   - ./github-mcp/ks.yaml
   - ./kubectl-mcp/ks.yaml
   - ./arr-mcp/ks.yaml
+  - ./lubelog-mcp/ks.yaml
   - ./hermes/ks.yaml
   - ./johan/ks.yaml
   - ./makkapakka/ks.yaml
