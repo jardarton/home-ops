@@ -41,7 +41,17 @@ spec:
               HOME: /opt/data
               HERMES_DASHBOARD: "true"
               HERMES_DASHBOARD_HOST: 0.0.0.0
-              HERMES_DASHBOARD_INSECURE: "true"
+              HERMES_DASHBOARD_BASIC_AUTH_USERNAME: hermes
+              HERMES_DASHBOARD_BASIC_AUTH_PASSWORD:
+                valueFrom:
+                  secretKeyRef:
+                    name: hermes-secret
+                    key: HERMES_DASHBOARD_BASIC_AUTH_PASSWORD
+              HERMES_DASHBOARD_BASIC_AUTH_SECRET:
+                valueFrom:
+                  secretKeyRef:
+                    name: hermes-secret
+                    key: HERMES_DASHBOARD_BASIC_AUTH_SECRET
               GATEWAY_HEALTH_URL: http://localhost:8642
               TZ: Europe/Oslo
             envFrom:
@@ -60,8 +70,8 @@ spec:
                 custom: true
                 spec:
                   httpGet:
-                    path: /
-                    port: *httpPort
+                    path: /health
+                    port: *gatewayPort
                   periodSeconds: 30
                   timeoutSeconds: 5
                   failureThreshold: 5
