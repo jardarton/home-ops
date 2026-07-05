@@ -13,3 +13,4 @@ resources:
   - ./n8n/ks.yaml
   - ./vaultwarden/ks.yaml
   - ./paperless/ks.yaml
+  - ./vikunja/ks.yaml
