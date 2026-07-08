@@ -9,6 +9,7 @@ resources:
   - ./ha-mcp/ks.yaml
   - ./github-mcp/ks.yaml
   - ./kubectl-mcp/ks.yaml
+  - ./revit-mcp/ks.yaml
   - ./arr-mcp/ks.yaml
   - ./lubelog-mcp/ks.yaml
   - ./hermes/ks.yaml
