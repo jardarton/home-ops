@@ -25,13 +25,17 @@ spec:
           app:
             image:
               repository: docker.io/library/node
-              tag: 22-alpine
+              tag: 22-bookworm-slim
             command:
               - /bin/sh
               - -c
               - >-
                 npx -y supergateway
                 --stdio "npx -y mcp-server-for-revit"
+                --outputTransport streamableHttp
+                --streamableHttpPath /mcp
+                --stateful
+                --sessionTimeout 300000
                 --host 0.0.0.0
                 --port 8000
             env:
