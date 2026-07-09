@@ -14,6 +14,7 @@ jobs:
   pre-job:
     name: Flux Local Pre-Job
     runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && contains(fromJSON('["jardt", "renovate[bot]"]'), github.event.pull_request.user.login) }}
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
     steps:
@@ -111,7 +112,7 @@ jobs:
     name: Flux Local Success
     needs: ["test", "diff"]
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+    if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository && contains(fromJSON('["jardt", "renovate[bot]"]'), github.event.pull_request.user.login) }}
     steps:
       - name: Any jobs failed?
         if: ${{ contains(needs.*.result, 'failure') }}
