@@ -16,7 +16,7 @@ jobs:
   close-unauthorized-pr:
     name: Close Unauthorized Pull Request
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !contains(fromJSON('["jardt", "renovate[bot]"]'), github.event.pull_request.user.login) }}
+    if: ${{ github.event.pull_request.head.repo.full_name != github.repository || !contains(fromJSON('["jardarton", "renovate[bot]"]'), github.event.pull_request.user.login) }}
     steps:
       - name: Close unauthorized pull request
         env:
