@@ -29,10 +29,14 @@ spec:
               - /bin/sh
               - -ec
               - |
-                wget -O /tmp/vuetorrent.zip https://github.com/VueTorrent/VueTorrent/releases/download/v2.34.0/vuetorrent.zip
-                rm -rf /vuetorrent/*
-                unzip -q /tmp/vuetorrent.zip -d /tmp
-                cp -a /tmp/vuetorrent/. /vuetorrent/
+                workdir="$(mktemp -d)"
+                trap 'rm -rf "$workdir"' EXIT
+
+                wget -O "$workdir/vuetorrent.zip" https://github.com/VueTorrent/VueTorrent/releases/download/v2.34.0/vuetorrent.zip
+                unzip -q "$workdir/vuetorrent.zip" -d "$workdir"
+
+                find /vuetorrent -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
+                cp -a "$workdir/vuetorrent/." /vuetorrent/
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
