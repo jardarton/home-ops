@@ -59,7 +59,9 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
+        # Match the NFS server's root-squash anonymous UID so Kopia can read
+        # repository objects written by root-running VolSync jobs.
+        runAsUser: 65534
         runAsGroup: 100
         fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
