@@ -15,7 +15,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: gc
-              image: docker.io/library/registry:2.8.3
+              image: docker.io/library/registry:3.1.1
               command: ["/bin/registry"]
               args:
                 - garbage-collect
