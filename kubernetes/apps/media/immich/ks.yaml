@@ -57,7 +57,7 @@ spec:
     - ../../../../components/keda/nfs-scaler
   postBuild:
     substitute:
-      APP_NAME: *name
+      APP: *name
   path: ./kubernetes/apps/media/immich/machine-learning/
   sourceRef:
     kind: GitRepository
