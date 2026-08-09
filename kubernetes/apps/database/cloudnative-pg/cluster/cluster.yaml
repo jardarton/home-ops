@@ -26,20 +26,3 @@ spec:
       memory: 1Gi
   monitoring:
     enablePodMonitor: true
-  # plugins:
-  #   - enabled: true
-  #     isWALArchiver: true
-  #     name: barman-cloud.cloudnative-pg.io
-  #     parameters: &barmanParameters
-  #       barmanObjectName: garage-home-ops
-  #       serverName: home-ops-v3
-  # bootstrap:
-  #   recovery:
-  #     source: source
-  # externalClusters:
-  #   - name: source
-  #     plugin:
-  #       name: barman-cloud.cloudnative-pg.io
-  #       parameters:
-  #         barmanObjectName: garage-home-ops
-  #         serverName: home-ops-v2

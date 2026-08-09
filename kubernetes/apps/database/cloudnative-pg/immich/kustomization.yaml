@@ -3,5 +3,3 @@ kind: Kustomization
 resources:
   - ./cluster.yaml
   - ./externalservice.yaml
-# - ./scheduledbackup.yaml
-# - ./objectstore.yaml
