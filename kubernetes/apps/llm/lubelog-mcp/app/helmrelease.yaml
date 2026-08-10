@@ -25,7 +25,7 @@ spec:
           app:
             image:
               repository: ghcr.io/hargata/lubelogger_mcp
-              tag: latest@sha256:0f5efa7e0c0c7b59304998c59583edee57b87e2cc6ba62c47998c7eb23cac0b3
+              tag: latest@sha256:81161d717b8fe1f4bf233bb1a7f859d072a2927f8231851c306d6bf4ce751ce9
             env:
               LUBELOG_INSTANCE: http://lubelog.home.svc.cluster.local:8080
               TZ: Europe/Oslo
