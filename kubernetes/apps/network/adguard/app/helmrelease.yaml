@@ -37,7 +37,7 @@ spec:
                 spec:
                   failureThreshold: 30
                   periodSeconds: 5
-            securityContext:
+            securityContext: {}
             # readOnlyRootFilesystem: true
             # runAsUser: 65534
             # runAsGroup: 65534

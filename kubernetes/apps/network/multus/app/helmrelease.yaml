@@ -10,6 +10,8 @@ spec:
     name: app-template
     namespace: flux-system
   values:
+    defaultPodOptions:
+      automountServiceAccountToken: true
     controllers:
       multus:
         type: daemonset
