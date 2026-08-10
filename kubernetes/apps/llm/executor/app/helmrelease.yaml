@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: ghcr.io/rhyssullivan/executor-selfhost
-              tag: latest@sha256:0583523e898568fa8740664b0f542990e65c86a9636f6ed2b77569eff26e32b2
+              tag: latest@sha256:06622f4095955454d2c8d20b152200abae036c8101e9ab5ac2a6768deac0849e
             env:
               EXECUTOR_WEB_BASE_URL: https://executor.${SECRET_DOMAIN}
               EXECUTOR_ALLOW_LOCAL_NETWORK: "true"
