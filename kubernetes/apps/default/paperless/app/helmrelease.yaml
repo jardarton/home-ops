@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: ghcr.io/paperless-ngx/paperless-ngx
-              tag: 2.20.15
+              tag: 3.0.5
             env:
               # Configure application
               PAPERLESS_SECRET_KEY:
@@ -53,7 +53,8 @@ spec:
               PAPERLESS_EXPORT_DIR: /data/nas/backup
               PAPERLESS_MEDIA_ROOT: /data/local/media
               # Configure folder importer
-              PAPERLESS_CONSUMER_POLLING: "60"
+              PAPERLESS_CONSUMER_DELETE_DUPLICATES: "true"
+              PAPERLESS_CONSUMER_POLLING_INTERVAL: "60"
               PAPERLESS_CONSUMER_RECURSIVE: "true"
               PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS: "true"
               # Configure OCR
