@@ -89,14 +89,30 @@ function apply_crds() {
     log info "Applying CRDs"
 
     local -r helmfile_file="${ROOT_DIR}/bootstrap/crds/helmfile.yaml"
+    local -ra manifest_files=(
+        "${ROOT_DIR}/bootstrap/crds/manifests/gateway-api-experimental-v1.6.1.yaml"
+    )
+    local crds manifest_file manifest_resources
 
     if [[ ! -f "${helmfile_file}" ]]; then
         log fatal "File does not exist" "file" "${helmfile_file}"
     fi
 
-    if ! crds=$(helmfile --file "${helmfile_file}" template --include-crds --no-hooks --quiet | yq -e -a --exit-status 'select(.kind == "CustomResourceDefinition")' -) || [[ -z "${crds}" ]]; then
+    if ! crds=$(helmfile --file "${helmfile_file}" template --include-crds --no-hooks --quiet | yq --yaml-output --explicit-start -e -a --exit-status 'select(.kind == "CustomResourceDefinition")' -) || [[ -z "${crds}" ]]; then
         log fatal "Failed to render CRDs from Helmfile" "file" "${helmfile_file}"
     fi
+
+    for manifest_file in "${manifest_files[@]}"; do
+        if [[ ! -f "${manifest_file}" ]]; then
+            log fatal "File does not exist" "file" "${manifest_file}"
+        fi
+
+        if ! manifest_resources=$(yq --yaml-output --explicit-start -e -a --exit-status 'select(.apiVersion != null and .kind != null and .metadata.name != null)' "${manifest_file}") || [[ -z "${manifest_resources}" ]]; then
+            log fatal "Failed to render resources from manifest" "file" "${manifest_file}"
+        fi
+
+        crds+=$'\n'"${manifest_resources}"
+    done
 
     if echo "${crds}" | kubectl diff --filename - &>/dev/null; then
         log info "CRDs are up-to-date"
