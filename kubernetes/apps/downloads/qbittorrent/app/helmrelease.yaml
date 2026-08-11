@@ -51,7 +51,23 @@ spec:
               - -ec
               - |
                 rm -f /config/qBittorrent/config/lockfile /config/qBittorrent/config/ipc-socket
-                sed -i 's#^WebUI\\RootFolder=.*#WebUI\\RootFolder=/vuetorrent#' /config/qBittorrent/config/qBittorrent.conf
+                config=/config/qBittorrent/config/qBittorrent.conf
+
+                awk '
+                  /^\[BitTorrent\]$/ {
+                    print
+                    print "Session\\DHTEnabled=false"
+                    print "Session\\LSDEnabled=false"
+                    print "Session\\PeXEnabled=false"
+                    next
+                  }
+                  /^(DHT|LSD|PeX)=/ { next }
+                  /^Session\\(DHT|LSD|PeX)Enabled=/ { next }
+                  { print }
+                ' "$config" > "$config.tmp"
+                mv "$config.tmp" "$config"
+
+                sed -i 's#^WebUI\\RootFolder=.*#WebUI\\RootFolder=/vuetorrent#' "$config"
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
