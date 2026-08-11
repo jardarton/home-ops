@@ -24,9 +24,10 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/jardt/mcp-servers-for-revit
-              tag: main
+              repository: ghcr.io/jardarton/mcp-servers-for-revit
+              tag: main@sha256:123f368645380e687d1e0267a6a7ccadb65a4ae58b28ceae7f649195a0ff9e4c
             env:
+              REVIT_MCP_DB_PATH: /data/revit-data.db
               TZ: Europe/Oslo
             ports:
               - containerPort: &httpPort 8000
@@ -66,6 +67,13 @@ spec:
             runAsGroup: 1000
             fsGroup: 1000
             fsGroupChangePolicy: OnRootMismatch
+    persistence:
+      data:
+        existingClaim: revit-mcp
+        advancedMounts:
+          revit-mcp:
+            app:
+              - path: /data
     service:
       app:
         ports:
