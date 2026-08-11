@@ -9,6 +9,7 @@ resources:
   # - ./it-tools/ks.yaml
   - ./actual/ks.yaml
   - ./changedetection/ks.yaml
+  - ./decompme/ks.yaml
   - ./flaresolverr/ks.yaml
   - ./n8n/ks.yaml
   - ./vaultwarden/ks.yaml

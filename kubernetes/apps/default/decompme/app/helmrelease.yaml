@@ -1,0 +1,225 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app decompme
+spec:
+  interval: 30m
+  timeout: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: false
+    controllers:
+      decompme:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          securityContext:
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+        initContainers:
+          01-init-db:
+            image:
+              repository: ghcr.io/home-operations/postgres-init
+              tag: 18.4@sha256:ebd9d30add17acdf935d73eb004758c7dfd9388aaa605fda70ad74378ab92aec
+            envFrom: &envFrom
+              - secretRef:
+                  name: decompme-secret
+          02-download-platforms:
+            image: &backendImage
+              repository: ghcr.io/decompme/decompme-backend
+              tag: 6536c48ae1d8@sha256:329d0e563e9181f687d3793bb8cc235dd16d157f6d9fd0fe716a030a8d770bc9
+            command:
+              - /bin/bash
+              - -c
+            args:
+              - |
+                set -euo pipefail
+                mkdir -p /data/compilers /data/libraries /data/local_files /data/media
+                uv run /backend/compilers/download.py \
+                  --compilers-dir /data/compilers \
+                  --platforms $${DECOMPME_PLATFORMS}
+                uv run /backend/libraries/download.py \
+                  --libraries-dir /data/libraries \
+                  --platforms $${DECOMPME_PLATFORMS}
+            env:
+              # Change this list to install additional compiler platforms.
+              # "common" contains shared WiBo support files and should remain enabled.
+              DECOMPME_PLATFORMS: "common ps1"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+          03-migrate:
+            image: *backendImage
+            command:
+              - /bin/bash
+              - -c
+            args:
+              - uv run manage.py migrate --noinput
+            env: &backendEnv
+              ALLOWED_HOSTS: "decomp.${SECRET_DOMAIN},localhost,127.0.0.1"
+              BACKEND_WORKERS: "2"
+              COMPILER_BASE_PATH: /data/compilers
+              DATABASE_HOST: home-ops-rw.database.svc.cluster.local
+              DATABASE_PORT: "5432"
+              DEBUG: "off"
+              GITHUB_CLIENT_ID: ""
+              GITHUB_CLIENT_SECRET: ""
+              LIBRARY_BASE_PATH: /data/libraries
+              LOCAL_FILE_DIR: /data/local_files
+              MEDIA_ROOT: /data/media
+              MEDIA_URL: "https://decomp.${SECRET_DOMAIN}/media/"
+              SANDBOX_DISABLE_PROC: "true"
+              SECURE_PROXY_SSL_HEADER: "true"
+              SESSION_COOKIE_SECURE: "true"
+              USE_SANDBOX_JAIL: "on"
+            envFrom: *envFrom
+            resources:
+              requests:
+                cpu: 25m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+        containers:
+          backend:
+            image: *backendImage
+            env: *backendEnv
+            envFrom: *envFrom
+            securityContext:
+              allowPrivilegeEscalation: true
+              capabilities:
+                drop:
+                  - ALL
+                add:
+                  - SETFCAP
+                  - SETGID
+                  - SETUID
+              seccompProfile:
+                type: Unconfined
+            probes:
+              liveness: &backendProbe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/healthz
+                    port: &backendPort 8000
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness: *backendProbe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/healthz
+                    port: *backendPort
+                  periodSeconds: 5
+                  timeoutSeconds: 3
+                  failureThreshold: 30
+            resources:
+              requests:
+                cpu: 500m
+                memory: 2Gi
+              limits:
+                memory: 6Gi
+          frontend:
+            image:
+              repository: ghcr.io/jardarton/decompme-frontend
+              tag: 6536c48ae1d8-anonymous@sha256:3a724e30c2b08c41b3845e6442da795a5ce09addd5d96c429a99dff3d2c7407d
+            env:
+              INTERNAL_API_BASE: http://127.0.0.1:8000/api
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+            probes:
+              liveness: &frontendProbe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: &frontendPort 8080
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 5
+              readiness: *frontendProbe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: *frontendPort
+                  periodSeconds: 5
+                  timeoutSeconds: 3
+                  failureThreshold: 30
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+    service:
+      app:
+        controller: *app
+        ports:
+          http:
+            port: *frontendPort
+          backend:
+            port: *backendPort
+    route:
+      app:
+        hostnames:
+          - "decomp.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /api
+            backendRefs:
+              - identifier: app
+                port: *backendPort
+          - backendRefs:
+              - identifier: app
+                port: *frontendPort
+    persistence:
+      data:
+        existingClaim: *app
+        advancedMounts:
+          decompme:
+            02-download-platforms:
+              - path: /data
+            03-migrate:
+              - path: /data
+            backend:
+              - path: /data
+      sandbox-tmp:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 64Mi
+        advancedMounts:
+          decompme:
+            backend:
+              - path: /sandbox/tmp
