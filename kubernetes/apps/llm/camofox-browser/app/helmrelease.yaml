@@ -42,7 +42,7 @@ spec:
           app:
             image:
               repository: ghcr.io/redf0x1/camofox-browser
-              tag: 2.4.6@sha256:41e79fb61d50f0a8292b2a51c81ebcb0a2be24d89e9eac970edd12613006ced7
+              tag: 2.4.7@sha256:afaaf9795af8793f3e6353e9e5dd5b03713b6ffed6e80c1b0a179575322bcff0
             env:
               CAMOFOX_HOST: 0.0.0.0
               CAMOFOX_PORT: &httpPort 9377
