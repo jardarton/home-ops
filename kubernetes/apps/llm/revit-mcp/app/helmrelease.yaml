@@ -46,7 +46,7 @@ spec:
           revit-socket-proxy:
             image:
               repository: docker.io/alpine/socat
-              tag: 1.8.0.3
+              tag: 1.8.1.3
             args:
               - TCP-LISTEN:8080,bind=127.0.0.1,fork,reuseaddr
               - TCP:192.168.1.25:8080
