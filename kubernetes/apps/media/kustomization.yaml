@@ -9,4 +9,4 @@ resources:
   - immich/ks.yaml
   - audiobookshelf/ks.yaml
   - calibre/ks.yaml
-  # - music-assistant/ks.yaml
+  - music-assistant/ks.yaml
