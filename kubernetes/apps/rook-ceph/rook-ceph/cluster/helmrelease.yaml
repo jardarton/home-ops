@@ -47,6 +47,15 @@ spec:
             namespace: kube-system
             sectionName: https
     cephClusterSpec:
+      resources:
+        mgr:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            # The active manager repeatedly hit the chart's 1Gi default.
+            # Extra headroom is mitigation, not proof a memory leak is fixed.
+            memory: 2Gi
       cephConfig:
         global:
           bdev_enable_discard: "true" # quote
