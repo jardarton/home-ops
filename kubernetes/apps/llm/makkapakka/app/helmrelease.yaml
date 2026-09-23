@@ -31,7 +31,7 @@ spec:
           app:
             image: &image
               repository: nousresearch/hermes-agent
-              tag: v2026.8.31@sha256:64923faeae267792bf9bf87fe3b4c4869e35004e360c7df01730ad801b74d524
+              tag: v2026.9.21@sha256:6bece0644e29a347e5ae17db43c36938c86f171c6f5e0cef18aa2075d331f3a3
             args: ["gateway", "run"]
             env:
               API_SERVER_ENABLED: "true"
