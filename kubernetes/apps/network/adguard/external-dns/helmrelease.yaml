@@ -33,7 +33,7 @@ spec:
       webhook:
         image:
           repository: ghcr.io/muhlba91/external-dns-provider-adguard
-          tag: v11.1.1@sha256:b3dfe851982b59a36bf2e15f42ca4015b7ef39ddf7a808c39a855a05a61b5892
+          tag: v11.2.0@sha256:a119f729b16d435769aefcd9d4be149d4be7142848439bafd45e4045aa0b2e4e
         livenessProbe:
           httpGet:
             path: /healthz
