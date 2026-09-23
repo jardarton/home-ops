@@ -28,6 +28,13 @@ nodes:
           ip: "192.168.1.8"
   - hostname: "hp-1"
     ipAddress: "192.168.1.21"
+    patches:
+      - |-
+        machine:
+          logging:
+            destinations:
+              - endpoint: tcp://192.168.1.10:1514
+                format: json_lines
     installDiskSelector:
       model: PNY 250GB SATA S
     machineSpec:
