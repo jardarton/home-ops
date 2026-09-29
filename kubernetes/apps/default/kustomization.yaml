@@ -6,6 +6,7 @@ components:
   - ../../components/common
 resources:
   - ./echo/ks.yaml
+  - ./cli-proxy-api/ks.yaml
   # - ./it-tools/ks.yaml
   - ./actual/ks.yaml
   - ./changedetection/ks.yaml
