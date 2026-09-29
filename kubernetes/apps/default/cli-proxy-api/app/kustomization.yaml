@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ./secret.sops.yaml
   - ./helmrelease.yaml
+  - ./httproute-root-redirect.yaml

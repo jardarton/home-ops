@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: cli-proxy-api-root-redirect
+spec:
+  hostnames:
+    - "cli-proxy-api.${SECRET_DOMAIN}"
+  parentRefs:
+    - name: internal
+      namespace: kube-system
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /management.html
+            statusCode: 302
