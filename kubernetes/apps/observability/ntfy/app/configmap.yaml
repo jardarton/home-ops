@@ -9,3 +9,8 @@ data:
   NTFY_ATTACHMENT_CACHE_DIR: /var/cache/ntfy/attachments
   NTFY_UPSTREAM_BASE_URL: https://ntfy.sh
   LISTEN-HTTP: ":80"
+  # Auth is enabled only to fence off the sudo-approval topics; every other
+  # topic stays anonymously read-write. Users and tokens come from ntfy-auth.
+  NTFY_AUTH_FILE: /var/cache/ntfy/auth.db
+  NTFY_AUTH_DEFAULT_ACCESS: read-write
+  NTFY_AUTH_ACCESS: "everyone:sudo-*:deny-all,jdr:sudo-approval:read-only,sudo-host:sudo-approval:write-only,sudo-host:sudo-approval-reply:read-only,sudo-reply:sudo-approval-reply:write-only"

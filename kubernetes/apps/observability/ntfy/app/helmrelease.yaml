@@ -39,6 +39,8 @@ spec:
             envFrom:
               - configMapRef:
                   name: ntfy-config
+              - secretRef:
+                  name: ntfy-auth
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
