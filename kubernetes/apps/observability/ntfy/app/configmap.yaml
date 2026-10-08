@@ -14,3 +14,24 @@ data:
   NTFY_AUTH_FILE: /var/cache/ntfy/auth.db
   NTFY_AUTH_DEFAULT_ACCESS: read-write
   NTFY_AUTH_ACCESS: "everyone:sudo-*:deny-all,jdr:sudo-approval:read-only,sudo-host:sudo-approval:write-only,sudo-host:sudo-approval-reply:read-only,sudo-reply:sudo-approval-reply:write-only"
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.26.1-standalone-strict/configmap-v1.json
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntfy-templates
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+data:
+  # Alertmanager webhook payloads, used with ?template=heim-alerts.
+  heim-alerts.yml: |
+    title: |
+      {{- $sev := printf "%v" .commonLabels.severity -}}
+      {{- if eq .status "resolved" }}✅{{ else if eq $sev "critical" }}🚨{{ else }}⚠️{{ end }} {{ (first .alerts).labels.alertname }}{{ if gt (len .alerts) 1 }} ×{{ len .alerts }}{{ end }}
+    message: |
+      {{- range .alerts }}
+      {{ if and (eq $.status "firing") (eq .status "resolved") }}[resolved] {{ end }}{{ with .annotations.description }}{{ . }}{{ else }}{{ .annotations.summary }}{{ end }}
+      {{- end }}
+    priority: |
+      {{- $sev := printf "%v" .commonLabels.severity -}}
+      {{- if eq .status "resolved" }}2{{ else if eq $sev "critical" }}4{{ else }}3{{ end }}
