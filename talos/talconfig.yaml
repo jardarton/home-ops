@@ -53,7 +53,7 @@ nodes:
           - security=none
           - talos.auditd.disabled=1
           - i915.enable_guc=2 # Meteor Lake CPU & Intel iGPU
-          - netconsole=6665@192.168.1.21/eth0,6666@192.168.1.10
+          - netconsole=6665@192.168.1.21/bond0,6666@192.168.1.10/
         systemExtensions:
           officialExtensions:
             - siderolabs/intel-ucode
@@ -65,9 +65,13 @@ nodes:
     controlPlane: true
     nodeLabels:
       intel.feature.node.kubernetes.io/gpu: "true"
+    # bond0 exists before the NIC driver loads, so netconsole can attach to it at boot.
     networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: "38:22:e2:1a:92:09"
+      - interface: bond0
+        bond:
+          mode: balance-rr
+          deviceSelectors:
+            - hardwareAddr: "38:22:e2:1a:92:09"
         dhcp: true
         mtu: 1500
         vip:
