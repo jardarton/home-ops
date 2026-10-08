@@ -35,20 +35,49 @@ spec:
       upgradeJob:
         enabled: true
     alertmanager:
-      enabled: false
+      enabled: true
       route:
         main:
-          enabled: false
+          enabled: true
           hostnames: ["alertmanager.${SECRET_DOMAIN}"]
           parentRefs:
             - name: internal
               namespace: kube-system
               sectionName: https
+      config:
+        route:
+          group_by: ["alertname", "namespace", "severity"]
+          group_wait: 1m
+          group_interval: 10m
+          repeat_interval: 12h
+          receiver: ntfy
+          routes:
+            - receiver: "null"
+              matchers:
+                - alertname =~ "Watchdog|InfoInhibitor|CephNodeNetworkPacketDrops"
+            - receiver: "null"
+              matchers:
+                - severity =~ "info|none"
+            - receiver: ntfy
+              matchers:
+                - severity = "critical"
+              repeat_interval: 4h
+        receivers:
+          - name: "null"
+          - name: ntfy
+            webhook_configs:
+              # The heim-alerts template lives in the ntfy-templates ConfigMap.
+              - url: http://ntfy.observability.svc.cluster.local/alerts?template=heim-alerts&click=https://alertmanager.${SECRET_DOMAIN}
+                send_resolved: true
+                max_alerts: 10
       alertmanagerSpec:
-        alertmanagerConfiguration:
-          name: alertmanager
-          global:
-            resolveTimeout: 5m
+        externalUrl: https://alertmanager.${SECRET_DOMAIN}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            memory: 100Mi
         storage:
           volumeClaimTemplate:
             spec:
@@ -56,6 +85,10 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
+    defaultRules:
+      disabled:
+        KubeCPUOvercommit: true
+        KubeMemoryOvercommit: true
     kubeEtcd:
       service:
         selector:
@@ -72,6 +105,7 @@ spec:
               namespace: kube-system
               sectionName: https
       prometheusSpec:
+        externalUrl: https://prometheus.${SECRET_DOMAIN}
         image:
           registry: docker.io
           repository: prompp/prompp
@@ -130,16 +164,45 @@ spec:
       enabled: false
       forceDeployDashboards: true
     additionalPrometheusRulesMap:
-      dockerhub-rules:
+      cert-manager-rules:
         groups:
-          - name: dockerhub
+          - name: cert-manager
             rules:
-              - alert: DockerhubRateLimitRisk
+              - alert: CertificateExpiringSoon
                 annotations:
-                  summary: Kubernetes cluster Dockerhub rate limit risk
-                expr: count(time() - container_last_seen{image=~"(docker.io).*",container!=""} < 30) > 100
+                  summary: Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}; renewal is probably failing.
+                expr: certmanager_certificate_expiration_timestamp_seconds - time() < 21 * 86400
+                for: 1h
                 labels:
-                  severity: critical
+                  severity: warning
+              - alert: CertificateNotReady
+                annotations:
+                  summary: Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready.
+                expr: certmanager_certificate_ready_status{condition="False"} == 1
+                for: 15m
+                labels:
+                  severity: warning
+      flux-rules:
+        groups:
+          - name: flux
+            rules:
+              - alert: FluxResourceNotReady
+                annotations:
+                  summary: Flux {{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is not ready ({{ $labels.reason }}).
+                expr: flux_resource_info{ready="False", suspended="False"}
+                for: 15m
+                labels:
+                  severity: warning
+      node-rules:
+        groups:
+          - name: node
+            rules:
+              - alert: NodeRebooted
+                annotations:
+                  summary: Node {{ $labels.kubernetes_node }} rebooted {{ $value | humanizeDuration }} ago.
+                expr: min by (kubernetes_node) (time() - node_boot_time_seconds) < 900
+                labels:
+                  severity: warning
       oom-rules:
         groups:
           - name: oom
@@ -149,7 +212,7 @@ spec:
                   summary: Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has been OOMKilled {{ $value }} times in the last 10 minutes.
                 expr: (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1) and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
                 labels:
-                  severity: critical
+                  severity: warning
       zfs-rules:
         groups:
           - name: zfs
