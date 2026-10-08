@@ -29,9 +29,27 @@ data:
       {{- $sev := printf "%v" .commonLabels.severity -}}
       {{- if eq .status "resolved" }}✅{{ else if eq $sev "critical" }}🚨{{ else }}⚠️{{ end }} {{ (first .alerts).labels.alertname }}{{ if gt (len .alerts) 1 }} ×{{ len .alerts }}{{ end }}
     message: |
+      {{- $grafana := .externalURL | replace "://alertmanager." "://grafana." }}
       {{- range .alerts }}
       {{ if and (eq $.status "firing") (eq .status "resolved") }}[resolved] {{ end }}{{ with .annotations.description }}{{ . }}{{ else }}{{ .annotations.summary }}{{ end }}
+      {{- $l := .labels }}
+      {{- $t := printf "from=%d&to=now" (sub (toDate "2006-01-02T15:04:05Z07:00" .startsAt).UnixMilli 3600000) }}
+      {{- $d := "" }}
+      {{- if hasPrefix "Ceph" $l.alertname }}{{ $d = printf "tbO9LAiZK?%s" $t }}
+      {{- else if hasPrefix "VolSync" $l.alertname }}{{ $d = printf "cdp5agkgn4yrkc?%s" $t }}
+      {{- else if hasPrefix "etcd" $l.alertname }}{{ $d = printf "c2f4e12cdf69feb95caa41a5a1b423d9?%s" $t }}
+      {{- else if hasPrefix "Certificate" $l.alertname }}{{ $d = printf "cdhrcds8aosg0c?%s" $t }}
+      {{- else if eq $l.alertname "FluxResourceNotReady" }}{{ $d = printf "k8s_views_ns?%s&var-namespace=%v" $t $l.exported_namespace }}
+      {{- else if $l.pod }}{{ $d = printf "k8s_views_pods?%s&var-namespace=%v&var-pod=%v" $t $l.namespace $l.pod }}
+      {{- else if or $l.kubernetes_node $l.node }}{{ $d = printf "k8s_views_nodes?%s&var-node=%v" $t (or $l.kubernetes_node $l.node) }}
+      {{- else if $l.namespace }}{{ $d = printf "k8s_views_ns?%s&var-namespace=%v" $t $l.namespace }}
       {{- end }}
+      {{- with $d }}
+
+      [Dashboard]({{ $grafana }}/d/{{ . }})
+      {{- end }}
+
+      {{ end }}
     priority: |
       {{- $sev := printf "%v" .commonLabels.severity -}}
       {{- if eq .status "resolved" }}2{{ else if eq $sev "critical" }}4{{ else }}3{{ end }}

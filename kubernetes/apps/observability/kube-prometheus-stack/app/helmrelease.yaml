@@ -67,7 +67,7 @@ spec:
           - name: ntfy
             webhook_configs:
               # The heim-alerts template lives in the ntfy-templates ConfigMap.
-              - url: http://ntfy.observability.svc.cluster.local/alerts?template=heim-alerts&click=https://alertmanager.${SECRET_DOMAIN}
+              - url: http://ntfy.observability.svc.cluster.local/alerts?template=heim-alerts&markdown=yes&click=https://alertmanager.${SECRET_DOMAIN}
                 send_resolved: true
                 max_alerts: 10
       alertmanagerSpec:
