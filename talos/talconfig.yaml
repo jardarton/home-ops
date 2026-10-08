@@ -40,6 +40,24 @@ nodes:
         kind: KmsgLogConfig
         name: bigbox
         url: tcp://192.168.1.10:1515/
+    # Overrides the controlPlane schematic; netconsole sends kernel output (including panics) to bigbox.
+    schematic:
+      customization:
+        extraKernelArgs:
+          - -selinux
+          - apparmor=0
+          - init_on_alloc=0
+          - init_on_free=0
+          - mitigations=off
+          - net.ifnames=0
+          - security=none
+          - talos.auditd.disabled=1
+          - i915.enable_guc=2 # Meteor Lake CPU & Intel iGPU
+          - netconsole=6665@192.168.1.21/eth0,6666@192.168.1.10
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/intel-ucode
+            - siderolabs/i915 # Intel iGPU
     installDiskSelector:
       model: PNY 250GB SATA S
     machineSpec:
