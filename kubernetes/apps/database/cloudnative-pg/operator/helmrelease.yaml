@@ -19,6 +19,8 @@ spec:
       podMonitorEnabled: false
       grafanaDashboard:
         create: true
+        annotations:
+          grafana_folder: Storage
     resources:
       requests:
         cpu: 15m
