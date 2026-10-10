@@ -1,0 +1,143 @@
+---
+# yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: http-critical
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+    path: /probe
+  targets:
+    staticConfig:
+      labels:
+        tier: critical
+      static:
+        - https://passord.${SECRET_DOMAIN}/
+        - https://home.${SECRET_DOMAIN}/
+        - https://adguard.${SECRET_DOMAIN}/
+---
+# yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: http-critical-nfs
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+    path: /probe
+  targets:
+    staticConfig:
+      labels:
+        tier: critical
+        depends_on: nfs
+      static:
+        - https://bilder.${SECRET_DOMAIN}/
+---
+# yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: http
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+    path: /probe
+  targets:
+    staticConfig:
+      labels:
+        tier: standard
+      static:
+        - https://actual.${SECRET_DOMAIN}/
+        - https://changedetection.${SECRET_DOMAIN}/
+        - https://cli-proxy-api.${SECRET_DOMAIN}/
+        - https://decomp.${SECRET_DOMAIN}/
+        - https://echo.${SECRET_DOMAIN}/
+        - https://n8n.${SECRET_DOMAIN}/
+        - https://paperless.${SECRET_DOMAIN}/
+        - https://todo.${SECRET_DOMAIN}/
+        - https://lidarr.${SECRET_DOMAIN}/
+        - https://prowlarr.${SECRET_DOMAIN}/
+        - https://torrent.${SECRET_DOMAIN}/
+        - https://radarr.${SECRET_DOMAIN}/
+        - https://sonarr.${SECRET_DOMAIN}/
+        - https://lubelogger.${SECRET_DOMAIN}/
+        - https://zigbee2mqtt.${SECRET_DOMAIN}/
+        - https://ai.${SECRET_DOMAIN}/
+        - https://camofox-browser.${SECRET_DOMAIN}/
+        - https://executor.${SECRET_DOMAIN}/
+        - https://hermes.${SECRET_DOMAIN}/
+        - https://johan.${SECRET_DOMAIN}/
+        - https://makkapakka.${SECRET_DOMAIN}/
+        - https://musikk.${SECRET_DOMAIN}/
+        - https://grafana.${SECRET_DOMAIN}/
+        - https://alertmanager.${SECRET_DOMAIN}/
+        - https://prometheus.${SECRET_DOMAIN}/
+        - https://ntfy.${SECRET_DOMAIN}/
+        - https://rook.${SECRET_DOMAIN}/
+        - https://registry.${SECRET_DOMAIN}/
+---
+# yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: http-nfs
+spec:
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+    path: /probe
+  targets:
+    staticConfig:
+      labels:
+        tier: standard
+        depends_on: nfs
+      static:
+        - https://lydbok.${SECRET_DOMAIN}/
+        - https://calibre.${SECRET_DOMAIN}/
+        - https://calibre-downloader.${SECRET_DOMAIN}/
+        - https://jellyfin.${SECRET_DOMAIN}/
+        - https://kopia.${SECRET_DOMAIN}/
+---
+# yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: mcp
+spec:
+  module: http_mcp
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+    path: /probe
+  targets:
+    staticConfig:
+      labels:
+        tier: standard
+      static:
+        - https://arr-mcp.${SECRET_DOMAIN}/mcp
+        - https://github-mcp.${SECRET_DOMAIN}/mcp
+        - https://ha-mcp.${SECRET_DOMAIN}/mcp
+        - https://kubectl-mcp.${SECRET_DOMAIN}/mcp
+        - https://lubelog-mcp.${SECRET_DOMAIN}/api/mcp
+        - https://revit-mcp.${SECRET_DOMAIN}/mcp
+---
+# yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: dns
+spec:
+  module: dns_lan
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+    path: /probe
+  targets:
+    staticConfig:
+      labels:
+        tier: critical
+      static:
+        - 192.168.1.50:53 # adguard
+        - 192.168.1.30:53 # k8s-gateway
