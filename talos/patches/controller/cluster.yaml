@@ -6,6 +6,11 @@ cluster:
       enable-aggregator-routing: true
       feature-gates: ImageVolume=true,MutatingAdmissionPolicy=true
       runtime-config: admissionregistration.k8s.io/v1beta1=true
+    # Memory follows open watches, and one apiserver can hold most clients.
+    resources:
+      requests:
+        cpu: 200m
+        memory: 2Gi
   controllerManager:
     extraArgs:
       bind-address: 0.0.0.0
@@ -21,3 +26,6 @@ cluster:
   scheduler:
     extraArgs:
       bind-address: 0.0.0.0
+    resources:
+      requests:
+        memory: 128Mi
