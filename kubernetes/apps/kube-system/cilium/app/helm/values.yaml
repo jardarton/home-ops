@@ -17,6 +17,8 @@ cgroup:
 devices: eth+
 dashboards:
   enabled: true
+  annotations:
+    grafana_folder: Network
 endpointRoutes:
   enabled: true
 envoy:
@@ -47,6 +49,8 @@ localRedirectPolicy: true
 operator:
   dashboards:
     enabled: true
+    annotations:
+      grafana_folder: Network
   prometheus:
     enabled: true
     serviceMonitor:

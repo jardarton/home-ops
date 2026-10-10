@@ -29,6 +29,41 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  postRenderers:
+    - kustomize:
+        patches:
+          # Single-cluster duplicate, and a CoreDNS dashboard whose metrics we lack
+          # (the dotdc CoreDNS dashboard in Grafana's values covers it).
+          - target:
+              kind: ConfigMap
+              name: kube-prometheus-stack-(k8s-resources-multicluster|k8s-coredns)
+            patch: |
+              $patch: delete
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: unused
+          - target:
+              kind: ConfigMap
+              name: kube-prometheus-stack-(nodes|node-rsrc-use|node-cluster-rsrc-use)
+            patch: |
+              - op: replace
+                path: /metadata/annotations/grafana_folder
+                value: Nodes
+          - target:
+              kind: ConfigMap
+              name: kube-prometheus-stack-(alertmanager-overview|grafana-overview|prometheus)
+            patch: |
+              - op: replace
+                path: /metadata/annotations/grafana_folder
+                value: Observability
+          - target:
+              kind: ConfigMap
+              name: kube-prometheus-stack-persistentvolumesusage
+            patch: |
+              - op: replace
+                path: /metadata/annotations/grafana_folder
+                value: Storage
   values:
     cleanPrometheusOperatorObjectNames: true
     crds:
@@ -163,6 +198,16 @@ spec:
     grafana:
       enabled: false
       forceDeployDashboards: true
+      sidecar:
+        dashboards:
+          annotations:
+            grafana_folder: Kubernetes
+    nodeExporter:
+      operatingSystems:
+        aix:
+          enabled: false
+        darwin:
+          enabled: false
     additionalPrometheusRulesMap:
       cert-manager-rules:
         groups:
