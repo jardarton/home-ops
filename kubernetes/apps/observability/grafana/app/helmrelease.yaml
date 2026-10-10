@@ -29,6 +29,8 @@ spec:
         check_for_updates: false
         check_for_plugin_updates: false
         reporting_enabled: false
+      dashboards:
+        default_home_dashboard_path: /tmp/dashboards/home.json
       auth.anonymous:
         enabled: true
         org_id: 1
@@ -106,6 +108,9 @@ spec:
               path: /var/lib/grafana/dashboards/storage
     dashboards:
       kubernetes:
+        # Keep the tag in step with the flux-operator chart.
+        flux-performance:
+          url: https://raw.githubusercontent.com/controlplaneio-fluxcd/flux-operator/v0.54.1/config/monitoring/dashboards/flux-performance.json
         kubernetes-global:
           # renovate: depName="Kubernetes / Views / Global"
           gnetId: 15757
