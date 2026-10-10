@@ -52,13 +52,10 @@ spec:
         tier: standard
       static:
         - https://actual.${SECRET_DOMAIN}/
-        - https://changedetection.${SECRET_DOMAIN}/
         - https://cli-proxy-api.${SECRET_DOMAIN}/
         - https://decomp.${SECRET_DOMAIN}/
         - https://echo.${SECRET_DOMAIN}/
-        - https://n8n.${SECRET_DOMAIN}/
         - https://paperless.${SECRET_DOMAIN}/
-        - https://todo.${SECRET_DOMAIN}/
         - https://lidarr.${SECRET_DOMAIN}/
         - https://prowlarr.${SECRET_DOMAIN}/
         - https://torrent.${SECRET_DOMAIN}/
@@ -66,11 +63,8 @@ spec:
         - https://sonarr.${SECRET_DOMAIN}/
         - https://lubelogger.${SECRET_DOMAIN}/
         - https://zigbee2mqtt.${SECRET_DOMAIN}/
-        - https://ai.${SECRET_DOMAIN}/
         - https://camofox-browser.${SECRET_DOMAIN}/
         - https://executor.${SECRET_DOMAIN}/
-        - https://hermes.${SECRET_DOMAIN}/
-        - https://johan.${SECRET_DOMAIN}/
         - https://makkapakka.${SECRET_DOMAIN}/
         - https://musikk.${SECRET_DOMAIN}/
         - https://grafana.${SECRET_DOMAIN}/

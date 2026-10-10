@@ -12,8 +12,8 @@ resources:
   - ./revit-mcp/ks.yaml
   - ./arr-mcp/ks.yaml
   - ./lubelog-mcp/ks.yaml
-  - ./hermes/ks.yaml
-  - ./johan/ks.yaml
+  # - ./hermes/ks.yaml
+  # - ./johan/ks.yaml
   - ./makkapakka/ks.yaml
-  - ./open-webui/ks.yaml
+  # - ./open-webui/ks.yaml
   - ./camofox-browser/ks.yaml
