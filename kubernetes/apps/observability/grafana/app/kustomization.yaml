@@ -5,3 +5,18 @@ resources:
   - ./secret.sops.yaml
   - ./helmrelease.yaml
   - ./ocirepository.yaml
+configMapGenerator:
+  # No folder annotation: the home dashboard lands in General at /tmp/dashboards/home.json.
+  - name: grafana-dashboard-home
+    files:
+      - ./dashboards/home.json
+  - name: grafana-dashboard-uptime
+    files:
+      - ./dashboards/uptime.json
+    options:
+      annotations:
+        grafana_folder: Observability
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
