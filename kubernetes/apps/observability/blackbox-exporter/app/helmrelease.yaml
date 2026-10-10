@@ -59,6 +59,7 @@ spec:
             valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
             valid_status_codes: [200, 400, 401, 405, 406]
             preferred_ip_protocol: ip4
+        # echo is the gateway test app; its record should always exist.
         dns_lan:
           prober: dns
           timeout: 5s
@@ -83,9 +84,10 @@ spec:
     prometheusRule:
       enabled: true
       rules:
+        # Fires before the app alerts so the NFS inhibit rule is already active.
         - alert: BlackboxProbeFailed
           expr: probe_success{tier=""} == 0
-          for: 15m
+          for: 5m
           labels:
             severity: critical
           annotations:
