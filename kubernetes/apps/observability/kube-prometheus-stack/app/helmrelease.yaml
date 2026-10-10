@@ -112,6 +112,11 @@ spec:
           # KEDA scales NFS-backed apps to zero while the NFS server is down.
           - source_matchers: ['alertname = BlackboxProbeFailed', 'instance =~ .+:2049']
             target_matchers: ['depends_on = nfs']
+          # Knock-on alerts from a node outage or reboot; NodeRebooted and
+          # KubeNodeNotReady still notify, the rest only if they outlast NodeDisrupted.
+          - source_matchers: ['alertname = NodeDisrupted']
+            target_matchers:
+              - alertname =~ "Ceph(OSDDownHigh|OSDDown|OSDHostDown|MonDown|MonDownQuorumAtRisk|MonClockSkew|NodeDiskspaceWarning)|Kube(PodNotReady|DaemonSetRolloutStuck|DaemonSetMisScheduled|DeploymentReplicasMismatch|StatefulSetReplicasMismatch|StatefulSetUpdateNotRolledOut|ClientCertificateExpiration|NodeReadinessFlapping)|KubeletInstanceUnreachable|TargetDown|etcd(HighNumberOfLeaderChanges|MemberCommunicationSlow|HighNumberOfFailedGRPCRequests)"
         receivers:
           - name: "null"
           - name: ntfy
@@ -135,6 +140,13 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
+    customRules:
+      KubePodNotReady:
+        for: 30m
+      KubeDeploymentReplicasMismatch:
+        for: 30m
+      KubeStatefulSetReplicasMismatch:
+        for: 30m
     defaultRules:
       disabled:
         KubeCPUOvercommit: true
@@ -263,6 +275,24 @@ spec:
                 expr: min by (kubernetes_node) (time() - node_boot_time_seconds) < 900
                 labels:
                   severity: warning
+              # Inhibition source only. Down or unreachable counts for the first hour,
+              # so a dead node doesn't hide Ceph and pod alerts indefinitely. Aggregate
+              # per node first: exporter pods get new labels when they're rescheduled.
+              - alert: NodeDisrupted
+                annotations:
+                  summary: Node {{ $labels.node }} is down or rebooted in the last 30 minutes.
+                expr: |
+                  (
+                    max by (node) (kube_node_status_condition{condition="Ready", status="true"}) == 0
+                    unless max by (node) (max_over_time(kube_node_status_condition{condition="Ready", status="true"}[1h])) == 0
+                  )
+                  or max by (node) (label_replace(time() - node_boot_time_seconds < 1800, "node", "$1", "kubernetes_node", "(.+)"))
+                  or max by (node) (label_replace(
+                    max by (kubernetes_node) (up{job="node-exporter"}) == 0
+                    unless max by (kubernetes_node) (max_over_time(up{job="node-exporter"}[1h])) == 0,
+                    "node", "$1", "kubernetes_node", "(.+)"))
+                labels:
+                  severity: none
       oom-rules:
         groups:
           - name: oom
