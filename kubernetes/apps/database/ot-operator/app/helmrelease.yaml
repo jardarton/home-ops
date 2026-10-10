@@ -34,6 +34,9 @@ spec:
     remediation:
       retries: 5
   values:
+    # The v0.25.0 image rejects this gate, which the chart now renders by default.
+    featureGates:
+      AvoidCommandLinePassword: null
     resources:
       requests:
         cpu: 50m
