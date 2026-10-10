@@ -65,3 +65,22 @@ spec:
           for: 1m
           labels:
             severity: warning
+        - alert: PgDumpTooOld
+          annotations:
+            description: The last successful run of {{ $labels.cronjob }} was {{ $value | humanizeDuration }} ago.
+            summary: A daily pg_dump backup has not succeeded for over 26 hours.
+          expr: |-
+            time() - kube_cronjob_status_last_successful_time{namespace="database", cronjob=~".+-pgdump"} > 26 * 3600
+          for: 15m
+          labels:
+            severity: warning
+        - alert: PgDumpMissing
+          annotations:
+            description: CronJob {{ $labels.cronjob }} has no successful run on record, or no longer exists.
+            summary: A pg_dump backup CronJob is missing.
+          expr: |-
+            absent(kube_cronjob_status_last_successful_time{namespace="database", cronjob="cloudnative-pg-postgres17-pgdump"})
+            or absent(kube_cronjob_status_last_successful_time{namespace="database", cronjob="cloudnative-pg-postgres17-immich-pgdump"})
+          for: 1h
+          labels:
+            severity: warning

@@ -33,6 +33,15 @@ spec:
       retries: 5
   values:
     fullnameOverride: blackbox-exporter
+    # Resolve app hostnames like LAN clients do: AdGuard, then k8s-gateway.
+    dnsPolicy: None
+    dnsConfig:
+      nameservers:
+        - 192.168.1.50
+        - 192.168.1.30
+      options:
+        - name: timeout
+          value: "2"
     config:
       modules:
         http_2xx:
@@ -42,6 +51,26 @@ spec:
             valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
             follow_redirects: true
             preferred_ip_protocol: ip4
+        # MCP endpoints reject plain GETs; any of these means the server answered.
+        http_mcp:
+          prober: http
+          timeout: 5s
+          http:
+            valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+            valid_status_codes: [200, 400, 401, 405, 406]
+            preferred_ip_protocol: ip4
+        # echo is the gateway test app; its record should always exist.
+        dns_lan:
+          prober: dns
+          timeout: 5s
+          dns:
+            query_name: echo.${SECRET_DOMAIN}
+            query_type: A
+            transport_protocol: udp
+            preferred_ip_protocol: ip4
+            valid_rcodes: [NOERROR]
+            validate_answer_rrs:
+              fail_if_none_matches_regexp: ['.*\sIN\sA\s.*']
         tcp_connect:
           prober: tcp
           timeout: 5s
@@ -55,11 +84,30 @@ spec:
     prometheusRule:
       enabled: true
       rules:
+        # Fires before the app alerts so the NFS inhibit rule is already active.
         - alert: BlackboxProbeFailed
-          expr: probe_success == 0
-          for: 15m
+          expr: probe_success{tier=""} == 0
+          for: 5m
           labels:
             severity: critical
           annotations:
             summary: |-
               The host {{ $labels.instance }} is currently unreachable
+        # Separate alert names keep the default critical-inhibits-warning rule
+        # from hiding one failing app behind another.
+        - alert: CriticalServiceUnreachable
+          expr: probe_success{tier="critical"} == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: |-
+              {{ $labels.instance }} has failed its probe for 10 minutes{{ with printf "probe_http_status_code{instance=%q}" $labels.instance | query }} (HTTP {{ . | first | value }}){{ end }}
+        - alert: ServiceUnreachable
+          expr: probe_success{tier="standard"} == 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: |-
+              {{ $labels.instance }} has failed its probe for 15 minutes{{ with printf "probe_http_status_code{instance=%q}" $labels.instance | query }} (HTTP {{ . | first | value }}){{ end }}
