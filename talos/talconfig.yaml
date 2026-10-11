@@ -106,22 +106,6 @@ nodes:
           hardwareAddr: "ec:a8:6b:f4:58:5b"
         dhcp: true
         mtu: 1500
-  - hostname: "talos-worker-0"
-    ipAddress: "192.168.1.24"
-    installDisk: /dev/vda
-    machineSpec:
-      secureboot: false
-    controlPlane: false
-    nodeLabels:
-      node.home.arpa/type: "vm"
-      node.home.arpa/host: "bigbox"
-      node.home.arpa/storage: "none"
-      intel.feature.node.kubernetes.io/gpu: "false"
-    networkInterfaces:
-      - deviceSelector:
-          hardwareAddr: "52:54:00:1a:10:24"
-        dhcp: true
-        mtu: 1500
 # Global patches
 patches:
   - |-
@@ -152,7 +136,7 @@ controlPlane:
         - init_on_free=0
         - mitigations=off
         - net.ifnames=0
-        - security=
+        - security=none
         - talos.auditd.disabled=1
         - i915.enable_guc=2 # Meteor Lake CPU & Intel iGPU
       systemExtensions:
