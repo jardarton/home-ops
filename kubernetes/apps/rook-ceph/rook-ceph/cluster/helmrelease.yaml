@@ -96,6 +96,15 @@ spec:
         provider: host
         connections:
           requireMsgr2: true
+      security:
+        cephx:
+          # Rotate daemon and admin keys off the insecure aes type (CVE-2025-30156).
+          daemon:
+            keyRotationPolicy: KeyGeneration
+            keyGeneration: 2
+          # Node kernels are older than 7.0 and cannot use aes256k for CSI mounts.
+          csi:
+            keyType: aes
       storage:
         useAllNodes: false
         useAllDevices: false
