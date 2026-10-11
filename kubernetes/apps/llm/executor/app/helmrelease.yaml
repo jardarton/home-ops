@@ -30,8 +30,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/rhyssullivan/executor-selfhost
-              tag: latest@sha256:06622f4095955454d2c8d20b152200abae036c8101e9ab5ac2a6768deac0849e
+              repository: ghcr.io/usefulsoftwareco/executor-selfhost
+              tag: 1.6.10@sha256:b9e001775d3eb7d662d347c8f7054333c78c1a4fd97cb5a86dc1d1d1406093b9
             env:
               EXECUTOR_WEB_BASE_URL: https://executor.${SECRET_DOMAIN}
               EXECUTOR_ALLOW_LOCAL_NETWORK: "true"
