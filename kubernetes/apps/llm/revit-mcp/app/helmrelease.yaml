@@ -17,6 +17,9 @@ spec:
     remediation:
       retries: 3
   values:
+    defaultPodOptions:
+      imagePullSecrets:
+        - name: ghcr-pull
     controllers:
       revit-mcp:
         annotations:
