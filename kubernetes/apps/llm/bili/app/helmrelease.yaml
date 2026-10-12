@@ -33,7 +33,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jardarton/bili
-              tag: 31f7940@sha256:edc2f6cf2a377be632421420eb41dadbce9bef786cadb8c417132de749ef28b0
+              tag: f700098@sha256:14d8ba75db689fccdfe4fdb0f7e7564220ae93513e11449bb2568e5dd2988295
             env:
               TZ: Europe/Oslo
             envFrom: *envFrom
