@@ -20,6 +20,8 @@ spec:
   values:
     defaultPodOptions:
       automountServiceAccountToken: false
+      imagePullSecrets:
+        - name: ghcr-pull
     controllers:
       decompme:
         annotations:
