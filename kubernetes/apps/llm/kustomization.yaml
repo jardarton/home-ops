@@ -11,7 +11,6 @@ resources:
   - ./kubectl-mcp/ks.yaml
   - ./revit-mcp/ks.yaml
   - ./arr-mcp/ks.yaml
-  - ./lubelog-mcp/ks.yaml
   - ./bili/ks.yaml
   # - ./hermes/ks.yaml
   # - ./johan/ks.yaml

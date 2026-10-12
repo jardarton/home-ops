@@ -61,7 +61,6 @@ spec:
         - https://torrent.${SECRET_DOMAIN}/
         - https://radarr.${SECRET_DOMAIN}/
         - https://sonarr.${SECRET_DOMAIN}/
-        - https://lubelogger.${SECRET_DOMAIN}/
         - https://zigbee2mqtt.${SECRET_DOMAIN}/
         - https://camofox-browser.${SECRET_DOMAIN}/
         - https://executor.${SECRET_DOMAIN}/
@@ -115,7 +114,6 @@ spec:
         - https://github-mcp.${SECRET_DOMAIN}/mcp
         - https://ha-mcp.${SECRET_DOMAIN}/mcp
         - https://kubectl-mcp.${SECRET_DOMAIN}/mcp
-        - https://lubelog-mcp.${SECRET_DOMAIN}/api/mcp
         - https://revit-mcp.${SECRET_DOMAIN}/mcp
 ---
 # yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
