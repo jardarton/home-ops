@@ -1,0 +1,53 @@
+---
+# A Bot's Environment reaches the internet and nothing at home: not the LAN, the cluster, or its services.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pippi-environments
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: pippi
+      app.kubernetes.io/component: environment
+  policyTypes: ["Ingress", "Egress"]
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 100.64.0.0/10
+              - 169.254.0.0/16
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+---
+# A Bot answers only the Gateway.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pippi-bots
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: pippi
+      app.kubernetes.io/component: bot
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: pippi
+              app.kubernetes.io/controller: gateway
+      ports:
+        - {protocol: TCP, port: 4801}

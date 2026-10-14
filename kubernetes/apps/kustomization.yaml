@@ -15,6 +15,7 @@ resources:
   - ./nfs-system
   - ./observability
   - ./openebs-system
+  - ./pippi
   - ./rook-ceph
   - ./system
   - ./volsync-system
