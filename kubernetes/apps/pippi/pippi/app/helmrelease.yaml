@@ -29,8 +29,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/jardarton/pippi
-              tag: c832345@sha256:31f793891e594e6c08dcc4ef2900febff259388e51dac1a31f1013bdf547abe5
+              repository: registry.${SECRET_DOMAIN}/pippi
+              tag: 8b8d7b1@sha256:02c35c82b10cd6d3387694d80aedb4e4ac46848980c3a60922709be214e04778
             args: ["gateway"]
             env:
               TZ: Europe/Oslo
@@ -42,11 +42,11 @@ spec:
               PIPPI_WEB_DIR: /app/apps/web/dist
               PIPPI_KEEPER: kubernetes
               # The Bots run the Gateway's own image, and their Environments this one.
-              PIPPI_BOT_IMAGE: ghcr.io/jardarton/pippi:c832345@sha256:31f793891e594e6c08dcc4ef2900febff259388e51dac1a31f1013bdf547abe5
-              PIPPI_ENVIRONMENT_IMAGE: ghcr.io/jardarton/pippi-environment:c832345@sha256:47005ba12bcccec1479da9d10d70b9f16bdcca63ec45b6cc0e01dc94b80ce753
+              PIPPI_BOT_IMAGE: registry.${SECRET_DOMAIN}/pippi:8b8d7b1@sha256:02c35c82b10cd6d3387694d80aedb4e4ac46848980c3a60922709be214e04778
+              PIPPI_ENVIRONMENT_IMAGE: registry.${SECRET_DOMAIN}/pippi-environment:8b8d7b1@sha256:5bbeaa290848443acdf8e8a4dfef9cc6db2f6a250497c00cfec5d2512f0eb4ad
               PIPPI_KUBERNETES_BOT_SECRET: pippi-bots
               PIPPI_KUBERNETES_HOUSEHOLD_SECRET: pippi-household
-              PIPPI_KUBERNETES_PULL_SECRET: ghcr-pull
+              PIPPI_KUBERNETES_PULL_SECRET: registry-pull
             envFrom:
               - secretRef:
                   name: pippi-secret
@@ -78,7 +78,7 @@ spec:
                 memory: 1Gi
         pod:
           imagePullSecrets:
-            - name: ghcr-pull
+            - name: registry-pull
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
