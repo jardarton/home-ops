@@ -71,7 +71,6 @@ spec:
         - https://prometheus.${SECRET_DOMAIN}/
         - https://ntfy.${SECRET_DOMAIN}/
         - https://rook.${SECRET_DOMAIN}/
-        - https://registry.${SECRET_DOMAIN}/
 ---
 # yaml-language-server: $schema=https://schemas.budimanjojo.com/monitoring.coreos.com/probe_v1.json
 apiVersion: monitoring.coreos.com/v1
