@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pippi
+components:
+  - ../../components/common
+resources:
+  - ./pippi/ks.yaml
+patches:
+  # The Gateway may create StatefulSets here, so their pods may not be privileged or reach the node.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: baseline
+          pod-security.kubernetes.io/warn: restricted
+          pod-security.kubernetes.io/audit: restricted

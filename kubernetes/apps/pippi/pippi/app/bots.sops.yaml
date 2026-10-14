@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pippi-bots
+stringData:
+  OPENROUTER_API_KEY: ENC[AES256_GCM,data:Nh0Cxeb5kxlTWMfoRDw8V+OI08wZcCw1pcFDsbN7DG2pG2kWLHWQLEx4+7h8V/3o+xKG86CLX0ZWb6ImPLQgwuaw955qw5X/qQ==,iv:f4zsxzxUjw1uo4r8xEk9jluVCtOOfX7c3w6zax8Ua7s=,tag:XOAaGX9bxhQJkoBUqBlCgw==,type:str]
+  EXECUTOR_API_KEY: ENC[AES256_GCM,data:yWj9ZygBhQeyI0ObVdVzlA5qyhNWQ3ClDKo0zwbQiLNwaWlxJp7ZNX9ql0Dg+4B9GU08CW0b90hws5mQsg5D1w==,iv:yfT2NJUSaDgiYyXqt33LY1/IFYrAdfn8Fh5V7kpoV84=,tag:V02sn6rdsKwB9kAJjxGTrQ==,type:str]
+sops:
+  age:
+    - enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSArYlFnZ0EvVFgxcUQzajZC
+        WE5tOFFOT0xVcVRmTUVvWGEvVzdzQlV4cEgwCm0wMStkckhCRzU0R1Nnb2liMkk0
+        aFExLzBPN1FDb1FjVTgzT2d3aXY4dEkKLS0tIDhNY1phbnJtOWh6Wk40Mkd4aHRh
+        MTFuUFdJamxweEpQcVBoc3luQkQvcVkKJJZRQIfLDqWL/OlS/TnEMzfXsv9MCuhz
+        vUPs/NfFgUcC2qFDM65krKTsUWYgAzXHtE3p2f/rmjGyWQnibxjJYQ==
+        -----END AGE ENCRYPTED FILE-----
+      recipient: age1yw4z4shdemtcqwee8d7uxl7slw9mertg6dulakpup5nca66lwysqpkpvuu
+  encrypted_regex: ^(data|stringData)$
+  lastmodified: "2026-10-14T11:01:34Z"
+  mac: ENC[AES256_GCM,data:KN8i7VQTE0tHnovHarSswJWVeR+jSglxBQz/YT4HjRN4TmS64ysSvJdGXKbO5LcxsAMIO5SZqQzTP3hhQkRzlZ3oSOkQKblbcaLtlpIlNdK1r53vDY37vY2xq/vdsDwn/Ya+BNABuwPwYce0iJUTP6boMmiixPa/TvwmcbFjf8s=,iv:V8F2SUbQmot904pEsjMpaM937T6wjgXRrZLeS6jhJ/M=,tag:C2seYmQUcIX+Fne6CFVhUw==,type:str]
+  mac_only_encrypted: true
+  version: 3.13.3
