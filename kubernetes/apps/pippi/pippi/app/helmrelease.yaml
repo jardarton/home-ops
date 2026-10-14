@@ -30,7 +30,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jardarton/pippi
-              tag: 120f575@sha256:2178813ffccebe4ce587a7b860e84bb65810a1227dda3eb6e919f577f33890e9
+              tag: c832345@sha256:31f793891e594e6c08dcc4ef2900febff259388e51dac1a31f1013bdf547abe5
             args: ["gateway"]
             env:
               TZ: Europe/Oslo
@@ -42,8 +42,8 @@ spec:
               PIPPI_WEB_DIR: /app/apps/web/dist
               PIPPI_KEEPER: kubernetes
               # The Bots run the Gateway's own image, and their Environments this one.
-              PIPPI_BOT_IMAGE: ghcr.io/jardarton/pippi:120f575@sha256:2178813ffccebe4ce587a7b860e84bb65810a1227dda3eb6e919f577f33890e9
-              PIPPI_ENVIRONMENT_IMAGE: ghcr.io/jardarton/pippi-environment:120f575@sha256:47005ba12bcccec1479da9d10d70b9f16bdcca63ec45b6cc0e01dc94b80ce753
+              PIPPI_BOT_IMAGE: ghcr.io/jardarton/pippi:c832345@sha256:31f793891e594e6c08dcc4ef2900febff259388e51dac1a31f1013bdf547abe5
+              PIPPI_ENVIRONMENT_IMAGE: ghcr.io/jardarton/pippi-environment:c832345@sha256:47005ba12bcccec1479da9d10d70b9f16bdcca63ec45b6cc0e01dc94b80ce753
               PIPPI_KUBERNETES_BOT_SECRET: pippi-bots
               PIPPI_KUBERNETES_HOUSEHOLD_SECRET: pippi-household
               PIPPI_KUBERNETES_PULL_SECRET: ghcr-pull
