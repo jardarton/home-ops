@@ -10,7 +10,16 @@ spec:
       app.kubernetes.io/name: pippi
       app.kubernetes.io/component: environment
   policyTypes: ["Ingress", "Egress"]
-  ingress: []
+  # Only the replies of the cluster's DNS: Cilium here judges them, coming from the Service's address, as new traffic,
+  # and dropped them, so lookups took seconds or failed. Nothing else may reach an Environment.
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
   egress:
     - to:
         - namespaceSelector:
