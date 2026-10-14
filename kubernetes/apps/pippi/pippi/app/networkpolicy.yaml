@@ -32,7 +32,8 @@ spec:
               - 172.16.0.0/12
               - 192.168.0.0/16
 ---
-# A Bot answers only the Gateway.
+# Only the Gateway reaches a Bot's RPC. The other ports stay open because Cilium here judges the replies to a Bot's own
+# calls to services, such as Executor, DNS, and the API server, as new traffic; the Bot listens on nothing else.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -51,3 +52,7 @@ spec:
               app.kubernetes.io/controller: gateway
       ports:
         - {protocol: TCP, port: 4801}
+    - ports:
+        - {protocol: TCP, port: 1, endPort: 4800}
+        - {protocol: TCP, port: 4802, endPort: 65535}
+        - {protocol: UDP, port: 1, endPort: 65535}
