@@ -5,4 +5,5 @@ kind: Kustomization
 resources:
   - ./cluster-secrets.sops.yaml
   - ./ghcr-pull.sops.yaml
+  - ./registry-pull.sops.yaml
   - ./sops-age.sops.yaml

@@ -1,0 +1,12 @@
+---
+# Every image here is built from a repository and can be pushed again, so the registry keeps no backups.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zot
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: ceph-block
+  resources:
+    requests:
+      storage: 50Gi
