@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+# A namespace to try pippi's changes in, deployed from a workstation with scripts/deploy-dev.sh in pippi. Flux keeps
+# only what makes it safe: Pod Security and the network policies.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pippi-dev
+components:
+  - ../../components/common
+resources:
+  - ./pippi/ks.yaml
+patches:
+  # The Gateway may create StatefulSets here, so their pods may not be privileged or reach the node.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: baseline
+          pod-security.kubernetes.io/warn: restricted
+          pod-security.kubernetes.io/audit: restricted

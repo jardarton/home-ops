@@ -16,6 +16,7 @@ resources:
   - ./observability
   - ./openebs-system
   - ./pippi
+  - ./pippi-dev
   - ./rook-ceph
   - ./system
   - ./volsync-system

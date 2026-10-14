@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+# What every namespace pippi runs in needs, so production and the dev namespace cannot drift apart.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./networkpolicy.yaml
