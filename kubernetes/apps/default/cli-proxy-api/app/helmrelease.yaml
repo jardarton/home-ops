@@ -10,6 +10,8 @@ spec:
   values:
     defaultPodOptions:
       automountServiceAccountToken: false
+      imagePullSecrets:
+        - name: ghcr-pull
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -20,6 +22,15 @@ spec:
       cli-proxy-api:
         annotations:
           reloader.stakater.com/auto: "true"
+        initContainers:
+          plugins:
+            image:
+              repository: ghcr.io/jardarton/cliproxy-key-scopes
+              tag: 91ab1bd@sha256:80f3e0776f9b0121fb4515caf394a41ac5e098587347d63389578738aa8bdbb5
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
         containers:
           app:
             image:
@@ -48,6 +59,15 @@ spec:
         existingClaim: *app
         globalMounts:
           - path: /data
+      plugins:
+        type: emptyDir
+        advancedMounts:
+          cli-proxy-api:
+            plugins:
+              - path: /plugins
+            app:
+              - path: /plugins
+                readOnly: true
       config:
         type: secret
         name: cli-proxy-api-secret
