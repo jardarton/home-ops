@@ -18,9 +18,25 @@ spec:
           labels:
             severity: critical
 
+        # kube-state-metrics reports the ReplicationSources and Destinations that
+        # exist; VolSync keeps the metrics of deleted ones until it restarts.
+        - alert: VolSyncObjectMetricsAbsent
+          expr: |
+            absent(kube_customresource_volsync_replicationsource_info)
+            or absent(kube_customresource_volsync_replicationdestination_info)
+          annotations:
+            summary: >-
+              kube-state-metrics reports no ReplicationSources or no ReplicationDestinations, so VolSyncVolumeOutOfSync cannot fire for them
+          for: 30m
+          labels:
+            severity: warning
+
         - alert: VolSyncVolumeOutOfSync
           expr: |
-            volsync_volume_out_of_sync == 1
+            volsync_volume_out_of_sync{role="source"} == 1
+              and on (obj_namespace, obj_name) kube_customresource_volsync_replicationsource_info
+            or volsync_volume_out_of_sync{role="destination"} == 1
+              and on (obj_namespace, obj_name) kube_customresource_volsync_replicationdestination_info
           annotations:
             summary: >-
               {{ $labels.obj_namespace }}/{{ $labels.obj_name }} volume is out of sync

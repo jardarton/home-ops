@@ -1,0 +1,22 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: intel-gpu
+spec:
+  groups:
+    - name: intel-gpu.rules
+      rules:
+        # Every node the plugin runs on should offer the GPU; kubelet rejects pods
+        # that ask for it while the plugin reports no healthy devices.
+        - alert: GpuUnavailable
+          expr: |
+            max by (node) (kube_pod_info{created_by_kind="DaemonSet", created_by_name="intel-gpu-plugin-i915", node!=""})
+            unless on (node) (kube_node_status_allocatable{resource="gpu_intel_com_i915"} > 0)
+          annotations:
+            summary: >-
+              Node {{ $labels.node }} offers no gpu.intel.com/i915; pods that need it are rejected there.
+          for: 10m
+          labels:
+            severity: warning
