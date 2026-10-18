@@ -116,7 +116,11 @@ spec:
           # KubeNodeNotReady still notify, the rest only if they outlast NodeDisrupted.
           - source_matchers: ['alertname = NodeDisrupted']
             target_matchers:
-              - alertname =~ "Ceph(OSDDownHigh|OSDDown|OSDHostDown|MonDown|MonDownQuorumAtRisk|MonClockSkew|NodeDiskspaceWarning)|Kube(PodNotReady|DaemonSetRolloutStuck|DaemonSetMisScheduled|DeploymentReplicasMismatch|StatefulSetReplicasMismatch|StatefulSetUpdateNotRolledOut|ClientCertificateExpiration|NodeReadinessFlapping)|KubeletInstanceUnreachable|TargetDown|etcd(HighNumberOfLeaderChanges|MemberCommunicationSlow|HighNumberOfFailedGRPCRequests)"
+              - alertname =~ "Ceph(OSDDownHigh|OSDDown|OSDHostDown|MonDown|MonDownQuorumAtRisk|MonClockSkew|NodeDiskspaceWarning)|Kube(PodNotReady|DaemonSetRolloutStuck|DaemonSetMisScheduled|DeploymentReplicasMismatch|StatefulSetReplicasMismatch|StatefulSetUpdateNotRolledOut|ClientCertificateExpiration|NodeReadinessFlapping)|KubeletInstanceUnreachable|TargetDown|GpuUnavailable|etcd(HighNumberOfLeaderChanges|MemberCommunicationSlow|HighNumberOfFailedGRPCRequests)"
+          # A failed pod is reported once, not again as waiting or not ready.
+          - source_matchers: ['alertname = PodFailed']
+            target_matchers: ['alertname =~ "KubeContainerWaiting|KubePodNotReady"']
+            equal: ['namespace', 'pod']
         receivers:
           - name: "null"
           - name: ntfy
@@ -214,6 +218,46 @@ spec:
         - pods=[*]
         - deployments=[*]
         - persistentvolumeclaims=[*]
+      # Which VolSync objects exist, for the VolSync alerts.
+      customResourceState:
+        enabled: true
+        config:
+          kind: CustomResourceStateMetrics
+          spec:
+            resources:
+              - groupVersionKind:
+                  group: volsync.backube
+                  version: v1alpha1
+                  kind: ReplicationSource
+                metricNamePrefix: kube_customresource_volsync
+                metrics:
+                  - name: replicationsource_info
+                    help: A VolSync ReplicationSource that exists.
+                    each:
+                      type: Info
+                      info:
+                        labelsFromPath:
+                          obj_namespace: [metadata, namespace]
+                          obj_name: [metadata, name]
+              - groupVersionKind:
+                  group: volsync.backube
+                  version: v1alpha1
+                  kind: ReplicationDestination
+                metricNamePrefix: kube_customresource_volsync
+                metrics:
+                  - name: replicationdestination_info
+                    help: A VolSync ReplicationDestination that exists.
+                    each:
+                      type: Info
+                      info:
+                        labelsFromPath:
+                          obj_namespace: [metadata, namespace]
+                          obj_name: [metadata, name]
+      rbac:
+        extraRules:
+          - apiGroups: ["volsync.backube"]
+            resources: ["replicationsources", "replicationdestinations"]
+            verbs: ["list", "watch"]
       prometheus:
         monitor:
           enabled: true
@@ -302,6 +346,24 @@ spec:
                 annotations:
                   summary: Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has been OOMKilled {{ $value }} times in the last 10 minutes.
                 expr: (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1) and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+                labels:
+                  severity: warning
+      pod-rules:
+        groups:
+          - name: pod
+            rules:
+              # Failed pods stay until deleted; Job pods are left to KubeJobFailed.
+              - alert: PodFailed
+                annotations:
+                  summary: Pod {{ $labels.namespace }}/{{ $labels.pod }} failed{{ with $labels.reason }} ({{ . }}){{ end }} and is left behind.
+                expr: |
+                  (
+                    max by (namespace, pod, reason) (kube_pod_status_reason == 1)
+                    or on (namespace, pod) max by (namespace, pod) (kube_pod_status_phase{phase="Failed"})
+                  )
+                  and on (namespace, pod) (kube_pod_status_phase{phase="Failed"} == 1)
+                  unless on (namespace, pod) kube_pod_owner{owner_kind="Job"}
+                for: 15m
                 labels:
                   severity: warning
       zfs-rules:

@@ -31,7 +31,9 @@ data:
     message: |
       {{- $grafana := .externalURL | replace "://alertmanager." "://grafana." }}
       {{- range .alerts }}
-      {{ if and (eq $.status "firing") (eq .status "resolved") }}[resolved] {{ end }}{{ with .annotations.description }}{{ . }}{{ else }}{{ .annotations.summary }}{{ end }}
+      {{- /* The chart's rules end in "on cluster" and the cluster label, which our metrics lack. */}}
+      {{- $text := .annotations.summary }}{{ with .annotations.description }}{{ $text = . }}{{ end }}
+      {{ if and (eq $.status "firing") (eq .status "resolved") }}[resolved] {{ end }}{{ with $text }}{{ . | replace " on cluster ." "." | replace " on cluster  " " " }}{{ end }}
       {{- $l := .labels }}
       {{- $t := printf "from=%d&to=now" (sub (toDate "2006-01-02T15:04:05Z07:00" .startsAt).UnixMilli 3600000) }}
       {{- $d := "" }}
