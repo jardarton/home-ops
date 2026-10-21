@@ -41,7 +41,8 @@ spec:
             command: [/backup.sh]
             env:
               POSTGRES_DB_FILE: /config/db_list
-              POSTGRES_EXTRA_OPTS: -Z9 --schema=public --blobs
+              # --schema=public leaves extensions out; kroner's exclusion constraint needs btree_gist.
+              POSTGRES_EXTRA_OPTS: -Z9 --schema=public --extension=btree_gist --blobs
               BACKUP_KEEP_DAYS: "7"
               BACKUP_KEEP_WEEKS: "4"
               BACKUP_KEEP_MONTHS: "3"

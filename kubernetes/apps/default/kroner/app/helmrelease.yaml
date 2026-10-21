@@ -26,7 +26,8 @@ spec:
             image:
               repository: ghcr.io/home-operations/postgres-init
               tag: 18.4@sha256:ebd9d30add17acdf935d73eb004758c7dfd9388aaa605fda70ad74378ab92aec
-            envFrom: &envFrom
+            # Only this container sees the superuser password it creates the database with.
+            envFrom:
               - secretRef:
                   name: kroner-secret
         containers:
@@ -38,7 +39,16 @@ spec:
               TZ: Europe/Oslo
               # Through the route, and from other namespaces such as Pippi's.
               KRONER_ALLOWED_HOSTS: kroner.${SECRET_DOMAIN},kroner.default.svc.cluster.local,kroner.default.svc
-            envFrom: *envFrom
+              DATABASE_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: kroner-secret
+                    key: DATABASE_URL
+              KRONER_MCP_TOKEN:
+                valueFrom:
+                  secretKeyRef:
+                    name: kroner-secret
+                    key: KRONER_MCP_TOKEN
             ports:
               - containerPort: &port 8080
                 name: http
