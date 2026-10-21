@@ -9,6 +9,7 @@ resources:
   - ./cli-proxy-api/ks.yaml
   # - ./it-tools/ks.yaml
   - ./actual/ks.yaml
+  - ./kroner/ks.yaml
   # - ./changedetection/ks.yaml
   - ./decompme/ks.yaml
   - ./flaresolverr/ks.yaml
