@@ -26,10 +26,8 @@ tasks:
   upgrade-node:
     desc: Upgrade Talos on a single node [IP=required]
     dir: '{{.TALOS_DIR}}'
-    cmd: talhelper gencommand upgrade --node {{.IP}} --extra-flags "--image='factory.talos.dev/metal-installer/9cbb12598550ff028f3e9dd5a9b0a579cf4c11918a1ab083b50086993b3cf4a9:{{.TALOS_VERSION}}' --timeout=10m" | bash
-    vars:
-      TALOS_VERSION:
-        sh: yq '.talosVersion' {{.TALOS_DIR}}/talenv.yaml
+    # talhelper picks each node's own schematic, so nodes keep their extensions and kernel args.
+    cmd: talhelper gencommand upgrade --node {{.IP}} --extra-flags "--timeout=10m" | bash
     requires:
       vars: [IP]
     preconditions:
