@@ -59,11 +59,11 @@ spec:
             memory: 2Gi
         mon:
           requests:
-            memory: 768Mi
+            memory: 512Mi
         osd:
           requests:
             # osd_memory_target follows the unchanged 4Gi limit.
-            memory: 3Gi
+            memory: 2Gi
       cephConfig:
         global:
           bdev_enable_discard: "true" # quote

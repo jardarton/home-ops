@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/csi.ceph.io/driver_v1.json
+apiVersion: csi.ceph.io/v1
+kind: Driver
+metadata:
+  name: rook-ceph.rbd.csi.ceph.com
+spec:
+  clusterName: rook-ceph
+  cephFsClientType: kernel
+  fsGroupPolicy: File
+  imageSet:
+    name: rook-csi-operator-image-set-configmap
+  controllerPlugin:
+    priorityClassName: system-node-critical
+    replicas: 2
+    resources:
+      plugin:
+        requests:
+          cpu: 250m
+          memory: 128Mi
+        limits:
+          memory: 1Gi
+  nodePlugin:
+    kubeletDirPath: /var/lib/kubelet
+    priorityClassName: system-cluster-critical
+    resources:
+      plugin:
+        requests:
+          memory: 128Mi
+        limits:
+          memory: 1Gi
+    updateStrategy:
+      type: RollingUpdate
