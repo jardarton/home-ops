@@ -109,6 +109,9 @@ spec:
               pullPolicy: IfNotPresent
             ports:
               - containerPort: 9998
+            resources:
+              requests:
+                memory: 384Mi
           gotenberg:
             image:
               repository: gotenberg/gotenberg

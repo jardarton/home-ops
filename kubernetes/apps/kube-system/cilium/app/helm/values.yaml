@@ -46,6 +46,9 @@ loadBalancer:
   algorithm: maglev
   mode: "dsr"
 localRedirectPolicy: true
+resources:
+  requests:
+    memory: 512Mi
 operator:
   dashboards:
     enabled: true
@@ -56,6 +59,9 @@ operator:
     serviceMonitor:
       enabled: true
   replicas: 1
+  resources:
+    requests:
+      memory: 256Mi
   rollOutPods: true
 prometheus:
   enabled: true

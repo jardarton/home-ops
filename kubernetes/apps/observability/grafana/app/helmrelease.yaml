@@ -219,5 +219,8 @@ spec:
             sectionName: https
     persistence:
       enabled: false
+    resources:
+      requests:
+        memory: 384Mi
     testFramework:
       enabled: false
