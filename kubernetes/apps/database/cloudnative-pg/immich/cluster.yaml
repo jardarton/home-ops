@@ -3,10 +3,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: immich
-  # Temporary while instances move to local-path: no restarts for PodSpec changes, and a third instance.
-  annotations:
-    cnpg.io/reconcilePodSpec: disabled
 spec:
+  # Temporary while instances move to local-path.
   instances: 3
   imageName: ghcr.io/tensorchord/cloudnative-vectorchord:17-0.5.3
   primaryUpdateStrategy: unsupervised
