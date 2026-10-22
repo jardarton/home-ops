@@ -1,20 +1,26 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: '3'
+vars:
+  CONTROLLER:
+    sh: yq '[.[] | select(.role == "controlplane")][0].ip' {{.TALOS_DIR}}/nodes.yaml
 tasks:
   talos:
     desc: Bootstrap the Talos cluster
     dir: '{{.TALOS_DIR}}'
     cmds:
-      - '[ -f talsecret.sops.yaml ] || talhelper gensecret | sops --filename-override talos/talsecret.sops.yaml --encrypt /dev/stdin > talsecret.sops.yaml'
-      - talhelper genconfig
-      - talhelper gencommand apply --extra-flags="--insecure" | bash
-      - until talhelper gencommand bootstrap | bash; do sleep 10; done
-      - until talhelper gencommand kubeconfig --extra-flags="{{.ROOT_DIR}} --force" | bash; do sleep 10; done
+      - '[ -f secrets.sops.yaml ] || talosctl gen secrets --force --output-file /dev/stdout | sops --filename-override talos/secrets.sops.yaml --encrypt /dev/stdin > secrets.sops.yaml'
+      - bash {{.SCRIPTS_DIR}}/talos-genconfig.sh
+      - |
+        for node in $(yq 'keys | .[]' nodes.yaml); do
+          talosctl --nodes "$(yq ".\"${node}\".ip" nodes.yaml)" apply-config --insecure --file "clusterconfig/heim-${node}.yaml"
+        done
+      - until talosctl --nodes {{.CONTROLLER}} bootstrap; do sleep 10; done
+      - until talosctl --nodes {{.CONTROLLER}} kubeconfig {{.ROOT_DIR}} --force; do sleep 10; done
     preconditions:
       - test -f {{.ROOT_DIR}}/.sops.yaml
       - test -f {{.SOPS_AGE_KEY_FILE}}
-      - test -f {{.TALOS_DIR}}/talconfig.yaml
-      - which talhelper talosctl sops
+      - test -f {{.TALOS_DIR}}/nodes.yaml
+      - which curl jq talosctl sops yq
   apps:
     desc: Bootstrap apps into the Talos cluster
     cmd: bash {{.SCRIPTS_DIR}}/bootstrap-apps.sh

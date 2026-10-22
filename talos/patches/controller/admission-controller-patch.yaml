@@ -1,5 +1,0 @@
-# Strategic merge, since Talos 1.12+ multi-document configs reject JSON6902 patches. $$ escapes talhelper's envsubst.
-cluster:
-  apiServer:
-    admissionControl:
-      $$patch: delete

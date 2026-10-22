@@ -1,55 +1,75 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: '3'
+vars:
+  NODES_FILE: '{{.TALOS_DIR}}/nodes.yaml'
+  CONFIG_DIR: '{{.TALOS_DIR}}/clusterconfig'
+  CONTROLLER:
+    sh: yq '[.[] | select(.role == "controlplane")][0].ip' {{.TALOS_DIR}}/nodes.yaml
 tasks:
   generate-config:
     desc: Generate Talos configuration
-    dir: '{{.TALOS_DIR}}'
-    cmd: talhelper genconfig
+    cmd: bash {{.SCRIPTS_DIR}}/talos-genconfig.sh
     preconditions:
-      - test -f {{.TALOS_DIR}}/talconfig.yaml
+      - test -f {{.NODES_FILE}}
       - test -f {{.ROOT_DIR}}/.sops.yaml
       - test -f {{.SOPS_AGE_KEY_FILE}}
-      - which talhelper
+      - which curl jq sops talosctl yq
   apply-node:
     desc: Apply Talos config to a node [IP=required]
-    dir: '{{.TALOS_DIR}}'
-    cmd: talhelper gencommand apply --node {{.IP}} --extra-flags '--mode={{.MODE}}' | bash
+    cmds:
+      # Always render first, so a stale config is never applied.
+      - task: generate-config
+      - talosctl --nodes {{.IP}} apply-config --mode={{.MODE}} --file {{.CONFIG_DIR}}/heim-{{.NODE}}.yaml
     vars:
       MODE: '{{.MODE | default "auto"}}'
+      NODE:
+        sh: yq 'to_entries[] | select(.value.ip == "{{.IP}}") | .key' {{.TALOS_DIR}}/nodes.yaml
     requires:
       vars: [IP]
     preconditions:
+      - sh: test -n "{{.NODE}}"
+        msg: '{{.IP}} is not in {{.NODES_FILE}}'
       - talosctl --nodes {{.IP}} get machineconfig
       - talosctl config info
       - test -f {{.TALOSCONFIG}}
-      - which talhelper talosctl yq
+      - which talosctl yq
   upgrade-node:
     desc: Upgrade Talos on a single node [IP=required]
-    dir: '{{.TALOS_DIR}}'
-    # talhelper picks each node's own schematic, so nodes keep their extensions and kernel args.
-    cmd: talhelper gencommand upgrade --node {{.IP}} --extra-flags "--timeout=10m" | bash
+    cmds:
+      - task: generate-config
+      # The rendered config holds each node's own schematic, so nodes keep their extensions and kernel args.
+      - |
+        image=$(yq --exit-status 'select(document_index == 0) | .machine.install.image' {{.CONFIG_DIR}}/heim-{{.NODE}}.yaml) &&
+          [[ "${image}" =~ ^factory\.talos\.dev/metal-installer/[0-9a-f]{64}:v[0-9.]+$ ]] &&
+          talosctl --nodes {{.IP}} upgrade --image "${image}" --timeout=10m
+    vars:
+      NODE:
+        sh: yq 'to_entries[] | select(.value.ip == "{{.IP}}") | .key' {{.TALOS_DIR}}/nodes.yaml
     requires:
       vars: [IP]
     preconditions:
+      - sh: test -n "{{.NODE}}"
+        msg: '{{.IP}} is not in {{.NODES_FILE}}'
       - talosctl --nodes {{.IP}} get machineconfig
       - talosctl config info
       - test -f {{.TALOSCONFIG}}
-      - which kubectl talhelper talosctl yq
+      - which kubectl talosctl yq
   upgrade-k8s:
     desc: Upgrade Kubernetes
-    dir: '{{.TALOS_DIR}}'
-    cmd: talhelper gencommand upgrade-k8s --extra-flags "--to '{{.KUBERNETES_VERSION}}'" | bash
+    cmd: talosctl --nodes {{.CONTROLLER}} upgrade-k8s --to '{{.KUBERNETES_VERSION}}'
     vars:
       KUBERNETES_VERSION:
         sh: yq '.kubernetesVersion' {{.TALOS_DIR}}/talenv.yaml
     preconditions:
       - talosctl config info
       - test -f {{.TALOSCONFIG}}
-      - which talhelper talosctl yq
+      - which talosctl yq
   reset:
     desc: Resets nodes back to maintenance mode
-    dir: '{{.TALOS_DIR}}'
     prompt: This will destroy your cluster and reset the nodes back to maintenance mode... continue?
-    cmd: talhelper gencommand reset --extra-flags="--reboot {{- if eq .CLI_FORCE false }} --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL{{ end }} --graceful=false --wait=false" | bash
+    cmd: talosctl --nodes {{.NODES}} reset --reboot {{- if eq .CLI_FORCE false }} --system-labels-to-wipe STATE --system-labels-to-wipe EPHEMERAL{{ end }} --graceful=false --wait=false
+    vars:
+      NODES:
+        sh: yq '[.[].ip] | join(",")' {{.TALOS_DIR}}/nodes.yaml
     preconditions:
-      - which talhelper
+      - which talosctl yq
