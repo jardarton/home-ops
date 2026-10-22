@@ -1,11 +1,14 @@
-machine:
-  network:
-    disableSearchDomain: true
-    nameservers:
-      - 1.1.1.1
-      - 1.0.0.1
-    # Nodes resolve with public DNS, which does not know the in-cluster registry; it is served by the internal gateway.
-    extraHostEntries:
-      - ip: 192.168.1.31
-        aliases:
-          - registry.${SECRET_DOMAIN}
+apiVersion: v1alpha1
+kind: ResolverConfig
+nameservers:
+  - address: 1.1.1.1
+  - address: 1.0.0.1
+searchDomains:
+  disableDefault: true
+---
+# Nodes resolve with public DNS, which does not know the in-cluster registry; it is served by the internal gateway.
+apiVersion: v1alpha1
+kind: StaticHostConfig
+name: 192.168.1.31
+hostnames:
+  - registry.${SECRET_DOMAIN}
