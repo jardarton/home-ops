@@ -2,7 +2,7 @@ apiVersion: v1alpha1
 kind: UnattendedInstallConfig
 provisioning:
   diskSelector:
-    match: disk.model == "PNY 250GB SATA S"
+    match: disk.model == "PNY 250GB SATA S" && disk.transport != ""
 ---
 apiVersion: v1alpha1
 kind: KubeNodeConfig

@@ -15,6 +15,16 @@ resources:
   requests:
     cpu: 200m
     memory: 2Gi
+# The probes need anonymous access to /livez and /readyz, which stays off.
+startupProbes: false
+---
+# Without this document Talos writes an empty authentication config, which the apiserver cannot load.
+apiVersion: v1alpha1
+kind: KubeAuthenticationConfig
+configuration:
+  anonymous:
+    enabled: false
+  jwt: []
 ---
 apiVersion: v1alpha1
 kind: KubeControllerManagerConfig

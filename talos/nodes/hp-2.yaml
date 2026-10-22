@@ -2,7 +2,7 @@ apiVersion: v1alpha1
 kind: UnattendedInstallConfig
 provisioning:
   diskSelector:
-    match: disk.model == "KXG50ZNV256G TOSHIBA"
+    match: disk.model == "KXG50ZNV256G TOSHIBA" && disk.transport != ""
 ---
 apiVersion: v1alpha1
 kind: KubeNodeConfig

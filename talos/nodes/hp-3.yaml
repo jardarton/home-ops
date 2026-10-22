@@ -2,7 +2,7 @@ apiVersion: v1alpha1
 kind: UnattendedInstallConfig
 provisioning:
   diskSelector:
-    match: disk.model == "M4-CT256M4SSD3"
+    match: disk.model == "M4-CT256M4SSD3" && disk.transport != ""
 ---
 apiVersion: v1alpha1
 kind: KubeNodeConfig
