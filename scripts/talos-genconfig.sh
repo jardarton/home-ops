@@ -110,16 +110,33 @@ EOF
     fi
 }
 
+# Fills NODES, IPS and ENDPOINTS, refusing an inventory with a missing or malformed field.
+NODES=() IPS=() ENDPOINTS=()
+function load_inventory() {
+    local names node ip role
+
+    names=$(yq --exit-status 'keys | .[]' "${TALOS_DIR}/nodes.yaml")
+    for node in ${names}; do
+        ip=$(yq ".\"${node}\".ip" "${TALOS_DIR}/nodes.yaml")
+        role=$(yq ".\"${node}\".role" "${TALOS_DIR}/nodes.yaml")
+        if [[ ! "${ip}" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ || ! "${role}" =~ ^(controlplane|worker)$ ]]; then
+            log error "Invalid node in inventory" "node=${node}" "ip=${ip}" "role=${role}"
+        fi
+        NODES+=("${node}")
+        IPS+=("${ip}")
+        if [[ "${role}" == "controlplane" ]]; then
+            ENDPOINTS+=("${ip}")
+        fi
+    done
+
+    if ((${#ENDPOINTS[@]} == 0)); then
+        log error "Inventory has no controlplane nodes"
+    fi
+}
+
 function generate_talosconfig() {
-    local endpoints ips
-
-    endpoints=$(yq --exit-status '[.[] | select(.role == "controlplane") | .ip] | join(" ")' "${TALOS_DIR}/nodes.yaml")
-    ips=$(yq --exit-status '[.[].ip] | join(" ")' "${TALOS_DIR}/nodes.yaml")
-
-    # shellcheck disable=SC2086 # IPs are space-separated on purpose.
-    talosctl --talosconfig "${WORK_DIR}/talosconfig" config endpoint ${endpoints}
-    # shellcheck disable=SC2086
-    talosctl --talosconfig "${WORK_DIR}/talosconfig" config node ${ips}
+    talosctl --talosconfig "${WORK_DIR}/talosconfig" config endpoint "${ENDPOINTS[@]}"
+    talosctl --talosconfig "${WORK_DIR}/talosconfig" config node "${IPS[@]}"
 }
 
 # Older clients cannot parse the multi-document config; other minors need the patches migrated first.
@@ -150,12 +167,11 @@ function main() {
         export "${key}=${value}"
     done <<<"${env}"
 
-    local nodes
     local -a outputs=()
-    nodes=$(yq --exit-status 'keys | .[]' "${TALOS_DIR}/nodes.yaml")
+    load_inventory
 
     generate_base
-    for node in ${nodes}; do
+    for node in "${NODES[@]}"; do
         generate_node "${node}"
         outputs+=("${WORK_DIR}/${CLUSTER_NAME}-${node}.yaml")
     done

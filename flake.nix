@@ -1,6 +1,8 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    # Locked separately, so talosctl can follow the cluster without updating every other tool.
+    nixpkgs-talos.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
   outputs =
@@ -13,7 +15,7 @@
       systems = [ "x86_64-linux" ];
 
       perSystem =
-        { pkgs, system, ... }:
+        { pkgs, system, inputs', ... }:
         {
           formatter = pkgs.nixpkgs-fmt;
 
@@ -37,7 +39,7 @@
               kustomize
               kubectl
               yq-go
-              talosctl
+              inputs'.nixpkgs-talos.legacyPackages.talosctl
               kubeconform
               (pkgs.wrapHelm pkgs.kubernetes-helm { plugins = [ pkgs.kubernetes-helmPlugins.helm-diff ]; })
               minijinja
