@@ -4,8 +4,7 @@ kind: Cluster
 metadata:
   name: &name home-ops
 spec:
-  # Temporary while instances move to local-path.
-  instances: 3
+  instances: 2
   imageName: ghcr.io/cloudnative-pg/postgresql:18.0
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
