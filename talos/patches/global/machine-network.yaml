@@ -4,6 +4,8 @@ nameservers:
   - address: 1.1.1.1
   - address: 1.0.0.1
 searchDomains:
+  # An explicit empty list keeps DHCP search domains out; Talos 1.14 merges them in when it is absent.
+  domains: []
   disableDefault: true
 ---
 # Nodes resolve with public DNS, which does not know the in-cluster registry; it is served by the internal gateway.
