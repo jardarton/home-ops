@@ -1,0 +1,47 @@
+machine:
+  install:
+    diskSelector:
+      model: PNY 250GB SATA S
+  nodeLabels:
+    intel.feature.node.kubernetes.io/gpu: "true"
+    # Talos adds this to controlplanes by default; of the three, only hp-0 has it.
+    node.kubernetes.io/exclude-from-external-load-balancers:
+      $patch: delete
+  logging:
+    destinations:
+      - endpoint: tcp://192.168.1.10:1514
+        format: json_lines
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: "off"
+hostname: hp-1
+---
+# bond0 exists before the NIC driver loads, so netconsole can attach to it at boot.
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: bond0-m0
+selector:
+  match: glob("38:22:e2:1a:92:09", mac(link.hardware_addr))
+---
+apiVersion: v1alpha1
+kind: BondConfig
+name: bond0
+links:
+  - bond0-m0
+bondMode: balance-rr
+mtu: 1500
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: bond0
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 192.168.1.8
+link: bond0
+---
+apiVersion: v1alpha1
+kind: KmsgLogConfig
+name: bigbox
+url: tcp://192.168.1.10:1515/
