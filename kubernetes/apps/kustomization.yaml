@@ -15,7 +15,6 @@ resources:
   - ./network
   - ./nfs-system
   - ./observability
-  - ./openebs-system
   - ./pippi
   - ./pippi-dev
   - ./rook-ceph
