@@ -35,6 +35,14 @@ spec:
       enabled: true
       createPrometheusRules: true
       interval: 60s
+      prometheusRuleOverrides:
+        # CSI keys stay on aes until node kernels reach 7.0 (see security.cephx.csi),
+        # so ignore the warnings this causes and alert on any other one.
+        CephHealthWarning:
+          expr: >-
+            ceph_health_status == 1
+            and on (cluster)
+            ceph_health_detail{name!~"AUTH_INSECURE_CLIENT_KEY_TYPE|AUTH_INSECURE_KEYS_ALLOWED|AUTH_INSECURE_KEYS_CREATABLE"} == 1
     toolbox:
       enabled: true
     route:
