@@ -1,9 +1,0 @@
-# gen config still sets the v1alpha1 kubePrism feature, which conflicts with KubePrismConfig. Cilium reaches the API through it.
-machine:
-  features:
-    kubePrism:
-      $patch: delete
----
-apiVersion: v1alpha1
-kind: KubePrismConfig
-port: 7445

@@ -1,9 +1,11 @@
-cluster:
-  network:
-    # Disable built-in CNI to use Cilium
-    cni:
-      name: none
-    podSubnets:
-      - 10.42.0.0/16
-    serviceSubnets:
-      - 10.43.0.0/16
+apiVersion: v1alpha1
+kind: KubeNetworkConfig
+podSubnets:
+  - 10.42.0.0/16
+serviceSubnets:
+  - 10.43.0.0/16
+---
+# Cilium is the CNI; this document alone would deploy Flannel.
+apiVersion: v1alpha1
+kind: KubeFlannelCNIConfig
+$patch: delete

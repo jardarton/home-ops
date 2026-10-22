@@ -1,5 +1,0 @@
-# Strategic merge, since Talos 1.12+ multi-document configs reject JSON6902 patches.
-cluster:
-  apiServer:
-    admissionControl:
-      $patch: delete
