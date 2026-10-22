@@ -11,8 +11,11 @@ readonly OUT_DIR="${TALOS_DIR}/clusterconfig"
 readonly CLUSTER_NAME="heim"
 readonly CLUSTER_ENDPOINT="https://192.168.1.8:6443"
 readonly CERT_SANS="127.0.0.1,192.168.1.8"
-# The patches are written for this config contract; migrate them before moving to another minor.
-readonly SUPPORTED_CONTRACT="v1.13"
+# Configs are rendered with this contract's defaults, and the patches are written for it. Talos keeps honouring it
+# after an upgrade, so new defaults arrive only as documents the patches add.
+readonly CONFIG_CONTRACT="v1.13"
+# Talos minors that may run configs rendered with CONFIG_CONTRACT.
+readonly SUPPORTED_TALOS=("v1.13" "v1.14")
 
 # Rendered configs and decrypted secrets never leave this directory until every node renders.
 umask 077
@@ -65,13 +68,13 @@ function generate_base() {
     add_patch_flags --config-patch "${TALOS_DIR}/patches/global"
     add_patch_flags --config-patch-control-plane "${TALOS_DIR}/patches/controlplane"
 
-    log debug "Generating base configs" "talos=${TALOS_VERSION}" "kubernetes=${KUBERNETES_VERSION}"
+    log debug "Generating base configs" "contract=${CONFIG_CONTRACT}" "talos=${TALOS_VERSION}" "kubernetes=${KUBERNETES_VERSION}"
 
     sops --decrypt "${TALOS_DIR}/secrets.sops.yaml" >"${WORK_DIR}/secrets.yaml"
 
     talosctl gen config "${CLUSTER_NAME}" "${CLUSTER_ENDPOINT}" \
         --with-secrets "${WORK_DIR}/secrets.yaml" \
-        --talos-version "${TALOS_VERSION}" \
+        --talos-version "${CONFIG_CONTRACT}" \
         --kubernetes-version "${KUBERNETES_VERSION}" \
         --additional-sans "${CERT_SANS}" \
         --with-docs=false \
@@ -139,19 +142,24 @@ function generate_talosconfig() {
     talosctl --talosconfig "${WORK_DIR}/talosconfig" config node "${IPS[@]}"
 }
 
-# Older clients cannot parse the multi-document config; other minors need the patches migrated first.
+# Older clients cannot parse the multi-document config or upgrade to a newer minor; untested minors need review first.
 function check_versions() {
-    local client
+    local client minor supported=false
 
-    if [[ "${TALOS_VERSION%.*}" != "${SUPPORTED_CONTRACT}" ]]; then
-        log error "Patches target a different Talos minor; migrate them first" \
-            "talosVersion=${TALOS_VERSION}" "supported=${SUPPORTED_CONTRACT}"
+    for minor in "${SUPPORTED_TALOS[@]}"; do
+        [[ "${TALOS_VERSION%.*}" == "${minor}" ]] && supported=true
+    done
+    if [[ "${supported}" != true ]]; then
+        log error "Talos minor not supported with this config contract" \
+            "talosVersion=${TALOS_VERSION}" "contract=${CONFIG_CONTRACT}" "supported=${SUPPORTED_TALOS[*]}"
     fi
 
     client=$(talosctl version --client --short | awk '/^Talos/ {print $2}')
-    if [[ "$(printf '%s\n' "${SUPPORTED_CONTRACT}" "${client%.*}" | sort --version-sort | head -n1)" != "${SUPPORTED_CONTRACT}" ]]; then
-        log error "talosctl is older than the config contract" "client=${client}" "supported=${SUPPORTED_CONTRACT}"
-    fi
+    for minor in "${CONFIG_CONTRACT}" "${TALOS_VERSION%.*}"; do
+        if [[ "$(printf '%s\n' "${minor}" "${client%.*}" | sort --version-sort | head -n1)" != "${minor}" ]]; then
+            log error "talosctl is older than the Talos minor" "client=${client}" "required=${minor}"
+        fi
+    done
 }
 
 function main() {
