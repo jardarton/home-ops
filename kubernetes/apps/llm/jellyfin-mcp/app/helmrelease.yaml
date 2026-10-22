@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: jellyfin-mcp
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template-v5
+    namespace: flux-system
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      jellyfin-mcp:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/jardarton/jellyfin-mcp
+              tag: 0.1.0@sha256:f5b71b2b06da77296644674e155ce37443bf0885ffe8c4ecbc57478a893ac90f
+            env:
+              JELLYFIN_URL: http://jellyfin.media.svc.cluster.local
+              JELLYFIN_MCP_ALLOWED_HOSTS: jellyfin-mcp,jellyfin-mcp.llm,jellyfin-mcp.llm.svc,jellyfin-mcp.llm.svc.cluster.local
+              TZ: Europe/Oslo
+            envFrom:
+              - secretRef:
+                  name: jellyfin-mcp-secret
+            ports:
+              - containerPort: &httpPort 8080
+                name: http
+                protocol: TCP
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: *httpPort
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile: {type: RuntimeDefault}
+    service:
+      app:
+        ports:
+          http:
+            port: *httpPort
