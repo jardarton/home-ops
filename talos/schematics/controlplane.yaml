@@ -1,0 +1,16 @@
+customization:
+  extraKernelArgs:
+    - -selinux
+    - apparmor=0
+    - init_on_alloc=0
+    - init_on_free=0
+    - mitigations=off
+    - net.ifnames=0
+    - security=none
+    - talos.auditd.disabled=1
+    - i915.enable_guc=2 # Meteor Lake CPU & Intel iGPU
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/intel-ucode
+      #- siderolabs/nfsrahead
+      - siderolabs/i915 # Intel iGPU

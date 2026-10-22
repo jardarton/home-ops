@@ -1,0 +1,34 @@
+machine:
+  install:
+    diskSelector:
+      model: KXG50ZNV256G TOSHIBA
+  nodeLabels:
+    intel.feature.node.kubernetes.io/gpu: "true"
+    # Talos adds this to controlplanes by default; of the three, only hp-0 has it.
+    node.kubernetes.io/exclude-from-external-load-balancers:
+      $patch: delete
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: "off"
+hostname: hp-2
+---
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: ethSel0
+selector:
+  match: glob("f8:b4:6a:a2:f6:2b", mac(link.hardware_addr))
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: ethSel0
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 192.168.1.8
+link: ethSel0
+---
+apiVersion: v1alpha1
+kind: LinkConfig
+name: ethSel0
+mtu: 1500

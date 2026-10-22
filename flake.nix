@@ -23,7 +23,6 @@
               kubectl
               python3
               makejinja
-              talhelper
               cilium-cli
               cloudflared
               cue

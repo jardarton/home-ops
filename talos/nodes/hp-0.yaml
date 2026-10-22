@@ -1,0 +1,29 @@
+machine:
+  install:
+    diskSelector:
+      model: PNY 250GB SATA S
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: "off"
+hostname: hp-0
+---
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: ethSel0
+selector:
+  match: glob("38:22:e2:17:5a:5a", mac(link.hardware_addr))
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: ethSel0
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: 192.168.1.8
+link: ethSel0
+---
+apiVersion: v1alpha1
+kind: LinkConfig
+name: ethSel0
+mtu: 1500

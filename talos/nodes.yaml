@@ -1,0 +1,6 @@
+# Node inventory for scripts/talos-genconfig.sh and the talos tasks.
+# Each node is patched with nodes/<name>.yaml and installs the Image Factory schematic schematics/<schematic>.yaml.
+hp-0: { ip: 192.168.1.20, role: controlplane, schematic: controlplane }
+hp-1: { ip: 192.168.1.21, role: controlplane, schematic: hp-1 }
+hp-2: { ip: 192.168.1.22, role: controlplane, schematic: controlplane }
+hp-3: { ip: 192.168.1.23, role: worker, schematic: worker }
