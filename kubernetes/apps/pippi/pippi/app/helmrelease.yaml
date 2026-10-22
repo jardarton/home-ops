@@ -47,6 +47,12 @@ spec:
               PIPPI_KUBERNETES_BOT_SECRET: pippi-bots
               PIPPI_KUBERNETES_HOUSEHOLD_SECRET: pippi-household
               PIPPI_KUBERNETES_PULL_SECRET: registry-pull
+              # The Gateway lists Executor's integrations with the Bots' key, to offer them as Extensions.
+              EXECUTOR_API_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: pippi-bots
+                    key: EXECUTOR_API_KEY
             envFrom:
               - secretRef:
                   name: pippi-secret
