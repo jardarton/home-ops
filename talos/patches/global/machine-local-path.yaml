@@ -1,0 +1,5 @@
+# A directory on the EPHEMERAL volume, mounted at /var/mnt/local-path, for local-path-provisioner.
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: local-path
+volumeType: directory

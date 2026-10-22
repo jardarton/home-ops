@@ -10,6 +10,7 @@ resources:
   - ./home
   - ./kube-system
   - ./llm
+  - ./local-path-system
   - ./media
   - ./network
   - ./nfs-system
