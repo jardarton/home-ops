@@ -1,5 +1,0 @@
-machine:
-  install:
-    # talosctl defaults the install disk to /dev/sda; nodes pick theirs with diskSelector instead.
-    disk:
-      $patch: delete

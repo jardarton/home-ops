@@ -1,13 +1,16 @@
-machine:
-  kubelet:
-    extraConfig:
-      # Pull a few images at once, so pods come back faster after a node restarts.
-      serializeImagePulls: false
-      maxParallelImagePulls: 3
-      # Reclaim unused images before Ceph monitors sharing /var reach their
-      # 30%-free warning threshold (kubelet defaults are 85/80% used).
-      imageGCHighThresholdPercent: 65
-      imageGCLowThresholdPercent: 60
-    nodeIP:
-      validSubnets:
-        - 192.168.1.0/24
+apiVersion: v1alpha1
+kind: KubeletConfig
+config:
+  # Pull a few images at once, so pods come back faster after a node restarts.
+  serializeImagePulls: false
+  maxParallelImagePulls: 3
+  # Reclaim unused images before Ceph monitors sharing /var reach their
+  # 30%-free warning threshold (kubelet defaults are 85/80% used).
+  imageGCHighThresholdPercent: 65
+  imageGCLowThresholdPercent: 60
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+nodeIP:
+  validSubnets:
+    - 192.168.1.0/24

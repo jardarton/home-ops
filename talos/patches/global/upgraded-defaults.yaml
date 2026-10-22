@@ -1,0 +1,25 @@
+# gen config adds these for new 1.14 clusters; dropping them keeps the behaviour this cluster had on 1.13.
+# Workload isolation breaks the in-tree nfs volumes still in use.
+apiVersion: v1alpha1
+kind: SecurityProfileConfig
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: FilesystemTrimConfig
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+$patch: delete
+---
+# The apiserver runs with --anonymous-auth=false; this document would allow anonymous health checks.
+apiVersion: v1alpha1
+kind: KubeAuthenticationConfig
+$patch: delete
+---
+# No PodSecurity admission configuration, as before.
+apiVersion: v1alpha1
+kind: KubeAdmissionControlConfig
+name: PodSecurity
+$patch: delete

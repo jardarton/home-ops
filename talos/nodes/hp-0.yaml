@@ -1,7 +1,8 @@
-machine:
-  install:
-    diskSelector:
-      model: PNY 250GB SATA S
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  diskSelector:
+    match: disk.model == "PNY 250GB SATA S"
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig

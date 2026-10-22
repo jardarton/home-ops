@@ -1,12 +1,16 @@
-machine:
-  install:
-    diskSelector:
-      model: KXG50ZNV256G TOSHIBA
-  nodeLabels:
-    intel.feature.node.kubernetes.io/gpu: "true"
-    # Talos adds this to controlplanes by default; of the three, only hp-0 has it.
-    node.kubernetes.io/exclude-from-external-load-balancers:
-      $patch: delete
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  diskSelector:
+    match: disk.model == "KXG50ZNV256G TOSHIBA"
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  intel.feature.node.kubernetes.io/gpu: "true"
+  # Talos adds this to controlplanes by default; of the three, only hp-0 has it.
+  node.kubernetes.io/exclude-from-external-load-balancers:
+    $patch: delete
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig

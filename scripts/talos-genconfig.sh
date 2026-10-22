@@ -13,10 +13,10 @@ readonly CLUSTER_ENDPOINT="https://192.168.1.8:6443"
 readonly CERT_SANS="127.0.0.1,192.168.1.8"
 # Configs are rendered with this contract's defaults, and the patches are written for it. Talos keeps honouring it
 # after an upgrade, so new config-level defaults arrive only as documents the patches add.
-readonly CONFIG_CONTRACT="v1.13"
+readonly CONFIG_CONTRACT="v1.14"
 # Talos minors that may run configs rendered with CONFIG_CONTRACT. Older minors cannot parse a newer contract's
 # documents, so drop them when CONFIG_CONTRACT moves.
-readonly SUPPORTED_TALOS=("v1.13" "v1.14")
+readonly SUPPORTED_TALOS=("v1.14")
 
 # Rendered configs and decrypted secrets never leave this directory until every node renders.
 umask 077
@@ -97,9 +97,10 @@ function generate_node() {
     log debug "Generating node config" "node=${node}" "role=${role}" "schematic=${id}"
 
     cat >"${WORK_DIR}/install-${node}.yaml" <<EOF
-machine:
-  install:
-    image: factory.talos.dev/metal-installer/${id}:${TALOS_VERSION}
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+installer:
+  image: factory.talos.dev/metal-installer/${id}:${TALOS_VERSION}
 EOF
     render_patch "${TALOS_DIR}/nodes/${node}.yaml" "${WORK_DIR}/node-${node}.yaml"
 

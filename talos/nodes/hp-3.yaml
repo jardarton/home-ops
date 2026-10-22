@@ -1,9 +1,13 @@
-machine:
-  install:
-    diskSelector:
-      model: M4-CT256M4SSD3
-  nodeLabels:
-    intel.feature.node.kubernetes.io/gpu: "false"
+apiVersion: v1alpha1
+kind: UnattendedInstallConfig
+provisioning:
+  diskSelector:
+    match: disk.model == "M4-CT256M4SSD3"
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+labels:
+  intel.feature.node.kubernetes.io/gpu: "false"
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig

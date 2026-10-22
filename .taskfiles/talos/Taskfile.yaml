@@ -39,7 +39,7 @@ tasks:
       - task: generate-config
       # The rendered config holds each node's own schematic, so nodes keep their extensions and kernel args.
       - |
-        image=$(yq --exit-status 'select(document_index == 0) | .machine.install.image' {{.CONFIG_DIR}}/heim-{{.NODE}}.yaml) &&
+        image=$(yq --exit-status 'select(.kind == "UnattendedInstallConfig") | .installer.image' {{.CONFIG_DIR}}/heim-{{.NODE}}.yaml) &&
           [[ "${image}" =~ ^factory\.talos\.dev/metal-installer/[0-9a-f]{64}:v[0-9.]+$ ]] &&
           talosctl --nodes {{.IP}} upgrade --image "${image}" --timeout=10m
     vars:
