@@ -86,7 +86,9 @@ function generate_base() {
 
     # gen config drops the identity provider Talos 1.13 appended, which reads Secrets stored before encryption.
     if ! yq -i '(select(.kind == "KubeEtcdEncryptionConfig") | .config.resources[0].providers) += [{"identity": {}}]' \
-        "${WORK_DIR}/controlplane.yaml"; then
+        "${WORK_DIR}/controlplane.yaml" ||
+        ! yq --exit-status 'select(.kind == "KubeEtcdEncryptionConfig") | .config.resources[0].providers[-1] | has("identity")' \
+            "${WORK_DIR}/controlplane.yaml" >/dev/null; then
         log error "Failed to add the identity encryption provider"
     fi
 }
