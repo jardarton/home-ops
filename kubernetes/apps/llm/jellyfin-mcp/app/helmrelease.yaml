@@ -25,7 +25,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jardarton/jellyfin-mcp
-              tag: 0.1.0@sha256:f5b71b2b06da77296644674e155ce37443bf0885ffe8c4ecbc57478a893ac90f
+              tag: 0.1.1@sha256:4338e33389f43efd2255b86d489253b00611400fc34e2900f26987cc90263d81
             env:
               JELLYFIN_URL: http://jellyfin.media.svc.cluster.local
               JELLYFIN_MCP_ALLOWED_HOSTS: jellyfin-mcp,jellyfin-mcp.llm,jellyfin-mcp.llm.svc,jellyfin-mcp.llm.svc.cluster.local
