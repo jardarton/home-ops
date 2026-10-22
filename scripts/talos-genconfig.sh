@@ -12,9 +12,10 @@ readonly CLUSTER_NAME="heim"
 readonly CLUSTER_ENDPOINT="https://192.168.1.8:6443"
 readonly CERT_SANS="127.0.0.1,192.168.1.8"
 # Configs are rendered with this contract's defaults, and the patches are written for it. Talos keeps honouring it
-# after an upgrade, so new defaults arrive only as documents the patches add.
+# after an upgrade, so new config-level defaults arrive only as documents the patches add.
 readonly CONFIG_CONTRACT="v1.13"
-# Talos minors that may run configs rendered with CONFIG_CONTRACT.
+# Talos minors that may run configs rendered with CONFIG_CONTRACT. Older minors cannot parse a newer contract's
+# documents, so drop them when CONFIG_CONTRACT moves.
 readonly SUPPORTED_TALOS=("v1.13" "v1.14")
 
 # Rendered configs and decrypted secrets never leave this directory until every node renders.
