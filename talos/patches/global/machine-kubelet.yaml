@@ -1,7 +1,9 @@
 machine:
   kubelet:
     extraConfig:
-      serializeImagePulls: true
+      # Pull a few images at once, so pods come back faster after a node restarts.
+      serializeImagePulls: false
+      maxParallelImagePulls: 3
       # Reclaim unused images before Ceph monitors sharing /var reach their
       # 30%-free warning threshold (kubelet defaults are 85/80% used).
       imageGCHighThresholdPercent: 65
