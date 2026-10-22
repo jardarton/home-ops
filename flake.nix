@@ -33,9 +33,10 @@
               kubernetes-helm
               helmfile
               jq
+              curl
               kustomize
               kubectl
-              yq
+              yq-go
               talosctl
               kubeconform
               (pkgs.wrapHelm pkgs.kubernetes-helm { plugins = [ pkgs.kubernetes-helmPlugins.helm-diff ]; })

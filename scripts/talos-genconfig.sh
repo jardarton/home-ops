@@ -11,6 +11,8 @@ readonly OUT_DIR="${TALOS_DIR}/clusterconfig"
 readonly CLUSTER_NAME="heim"
 readonly CLUSTER_ENDPOINT="https://192.168.1.8:6443"
 readonly CERT_SANS="127.0.0.1,192.168.1.8"
+# The patches are written for this config contract; migrate them before moving to another minor.
+readonly SUPPORTED_CONTRACT="v1.13"
 
 # Rendered configs and decrypted secrets never leave this directory until every node renders.
 umask 077
@@ -41,16 +43,19 @@ function add_patch_flags() {
 
 function schematic_id() {
     local -r schematic="${TALOS_DIR}/schematics/${1}.yaml"
-    local id
+    local response id
 
     if [[ ! -f "${schematic}" ]]; then
         log error "Schematic does not exist" "file=${schematic}"
     fi
 
-    id=$(curl --fail --silent --show-error --request POST --data-binary "@${schematic}" \
-        https://factory.talos.dev/schematics | jq --raw-output '.id')
-    if [[ -z "${id}" || "${id}" == "null" ]]; then
+    # Runs inside $(...), where errexit does not apply, so every step is checked explicitly.
+    if ! response=$(curl --fail --silent --show-error --request POST --data-binary "@${schematic}" \
+        https://factory.talos.dev/schematics); then
         log error "Failed to resolve schematic" "file=${schematic}"
+    fi
+    if ! id=$(jq --exit-status --raw-output '.id' <<<"${response}") || [[ ! "${id}" =~ ^[0-9a-f]{64}$ ]]; then
+        log error "Image Factory returned an invalid schematic ID" "file=${schematic}"
     fi
 
     echo "${id}"
@@ -80,9 +85,9 @@ function generate_node() {
     local -r node="${1}"
     local role schematic id
 
-    role=$(yq ".\"${node}\".role" "${TALOS_DIR}/nodes.yaml")
-    schematic=$(yq ".\"${node}\".schematic" "${TALOS_DIR}/nodes.yaml")
-    # Not inlined into local, so a failed lookup still stops the script.
+    # Assigned separately from local, so a failed lookup still stops the script.
+    role=$(yq --exit-status ".\"${node}\".role" "${TALOS_DIR}/nodes.yaml")
+    schematic=$(yq --exit-status ".\"${node}\".schematic" "${TALOS_DIR}/nodes.yaml")
     id=$(schematic_id "${schematic}")
 
     log debug "Generating node config" "node=${node}" "role=${role}" "schematic=${id}"
@@ -98,23 +103,46 @@ EOF
         --patch "@${WORK_DIR}/install-${node}.yaml" \
         --patch "@${WORK_DIR}/node-${node}.yaml" \
         --output "${WORK_DIR}/${CLUSTER_NAME}-${node}.yaml"
+
+    # machineconfig patch does not validate the result, e.g. a node left without an install disk.
+    if ! talosctl validate --mode metal --config "${WORK_DIR}/${CLUSTER_NAME}-${node}.yaml" >/dev/null; then
+        log error "Rendered config is invalid" "node=${node}"
+    fi
 }
 
 function generate_talosconfig() {
-    local -a endpoints nodes
+    local endpoints ips
 
-    mapfile -t endpoints < <(yq '.[] | select(.role == "controlplane") | .ip' "${TALOS_DIR}/nodes.yaml")
-    mapfile -t nodes < <(yq '.[].ip' "${TALOS_DIR}/nodes.yaml")
+    endpoints=$(yq --exit-status '[.[] | select(.role == "controlplane") | .ip] | join(" ")' "${TALOS_DIR}/nodes.yaml")
+    ips=$(yq --exit-status '[.[].ip] | join(" ")' "${TALOS_DIR}/nodes.yaml")
 
-    talosctl --talosconfig "${WORK_DIR}/talosconfig" config endpoint "${endpoints[@]}"
-    talosctl --talosconfig "${WORK_DIR}/talosconfig" config node "${nodes[@]}"
+    # shellcheck disable=SC2086 # IPs are space-separated on purpose.
+    talosctl --talosconfig "${WORK_DIR}/talosconfig" config endpoint ${endpoints}
+    # shellcheck disable=SC2086
+    talosctl --talosconfig "${WORK_DIR}/talosconfig" config node ${ips}
+}
+
+# Older clients cannot parse the multi-document config; other minors need the patches migrated first.
+function check_versions() {
+    local client
+
+    if [[ "${TALOS_VERSION%.*}" != "${SUPPORTED_CONTRACT}" ]]; then
+        log error "Patches target a different Talos minor; migrate them first" \
+            "talosVersion=${TALOS_VERSION}" "supported=${SUPPORTED_CONTRACT}"
+    fi
+
+    client=$(talosctl version --client --short | awk '/^Talos/ {print $2}')
+    if [[ "$(printf '%s\n' "${SUPPORTED_CONTRACT}" "${client%.*}" | sort --version-sort | head -n1)" != "${SUPPORTED_CONTRACT}" ]]; then
+        log error "talosctl is older than the config contract" "client=${client}" "supported=${SUPPORTED_CONTRACT}"
+    fi
 }
 
 function main() {
     check_cli curl jq sops talosctl yq
 
-    TALOS_VERSION=$(yq '.talosVersion' "${TALOS_DIR}/talenv.yaml")
-    KUBERNETES_VERSION=$(yq '.kubernetesVersion' "${TALOS_DIR}/talenv.yaml")
+    TALOS_VERSION=$(yq --exit-status '.talosVersion' "${TALOS_DIR}/talenv.yaml")
+    KUBERNETES_VERSION=$(yq --exit-status '.kubernetesVersion' "${TALOS_DIR}/talenv.yaml")
+    check_versions
     # Variables available to patches as ${NAME}.
     local env key value
     env=$(sops --decrypt --output-type dotenv "${TALOS_DIR}/talenv.sops.yaml")
@@ -122,13 +150,18 @@ function main() {
         export "${key}=${value}"
     done <<<"${env}"
 
+    local nodes
+    local -a outputs=()
+    nodes=$(yq --exit-status 'keys | .[]' "${TALOS_DIR}/nodes.yaml")
+
     generate_base
-    for node in $(yq 'keys | .[]' "${TALOS_DIR}/nodes.yaml"); do
+    for node in ${nodes}; do
         generate_node "${node}"
+        outputs+=("${WORK_DIR}/${CLUSTER_NAME}-${node}.yaml")
     done
     generate_talosconfig
 
-    mv "${WORK_DIR}/${CLUSTER_NAME}"-*.yaml "${WORK_DIR}/talosconfig" "${OUT_DIR}/"
+    mv "${outputs[@]}" "${WORK_DIR}/talosconfig" "${OUT_DIR}/"
     log info "Talos configs generated" "dir=${OUT_DIR}"
 }
 
