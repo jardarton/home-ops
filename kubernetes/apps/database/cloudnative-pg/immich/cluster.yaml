@@ -9,7 +9,16 @@ spec:
   primaryUpdateStrategy: unsupervised
   storage:
     size: 20Gi
-    storageClass: openebs-hostpath
+    storageClass: local-path
+  # Local volumes pin each instance to the node it first starts on; keep them off hp-1.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values: ["hp-1"]
   superuserSecret:
     name: cloudnative-pg-secret
   enableSuperuserAccess: true
