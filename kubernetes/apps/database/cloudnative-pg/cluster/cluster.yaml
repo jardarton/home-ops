@@ -3,14 +3,27 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: &name home-ops
+  # Temporary while instances move to local-path: no restarts for PodSpec changes, and a third instance.
+  annotations:
+    cnpg.io/reconcilePodSpec: disabled
 spec:
-  instances: 2
+  instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:18.0
   primaryUpdateStrategy: unsupervised
   primaryUpdateMethod: switchover
   storage:
     size: 20Gi
-    storageClass: openebs-hostpath
+    storageClass: local-path
+  # Local volumes pin each instance to the node it first starts on; keep them off hp-1.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values: ["hp-1"]
+    podAntiAffinityType: required
   superuserSecret:
     name: cloudnative-pg-secret
   enableSuperuserAccess: true

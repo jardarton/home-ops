@@ -9,8 +9,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: openebs
-      namespace: openebs-system
+    - name: local-path-provisioner
+      namespace: local-path-system
   path: ./kubernetes/apps/database/cloudnative-pg/operator
   prune: true
   sourceRef:
