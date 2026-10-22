@@ -37,7 +37,7 @@ spec:
       interval: 60s
       prometheusRuleOverrides:
         # CSI keys stay on aes until node kernels reach 7.0 (see security.cephx.csi),
-        # so ignore the warnings that causes and alert on any other one.
+        # so ignore the warnings this causes and alert on any other one.
         CephHealthWarning:
           expr: >-
             ceph_health_status == 1
