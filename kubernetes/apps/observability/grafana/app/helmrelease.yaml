@@ -110,7 +110,7 @@ spec:
       kubernetes:
         # Keep the tag in step with the flux-operator chart.
         flux-performance:
-          url: https://raw.githubusercontent.com/controlplaneio-fluxcd/flux-operator/v0.54.1/config/monitoring/dashboards/flux-performance.json
+          url: https://raw.githubusercontent.com/controlplaneio-fluxcd/flux-operator/v0.61.0/config/monitoring/dashboards/flux-performance.json
         kubernetes-global:
           # renovate: depName="Kubernetes / Views / Global"
           gnetId: 15757
