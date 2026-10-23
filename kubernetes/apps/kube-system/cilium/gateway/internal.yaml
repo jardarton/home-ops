@@ -10,7 +10,7 @@ spec:
       value: "192.168.1.31"
   infrastructure:
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "internal.${SECRET_DOMAIN}"
+      external-dns.kubernetes.io/hostname: "internal.${SECRET_DOMAIN}"
   listeners:
     - name: http
       protocol: HTTP

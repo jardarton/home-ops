@@ -33,7 +33,6 @@ spec:
       - --gateway-name=external
       # v0.22 stopped reading external-dns.alpha.kubernetes.io/ annotations.
       - --enable-legacy-annotation-prefix
-      - --dry-run
     triggerLoopOnEvent: true
     policy: sync
     sources: ["crd", "gateway-httproute"]
