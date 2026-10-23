@@ -39,13 +39,8 @@ spec:
       cephcsi:
         repository: quay.io/cephcsi/cephcsi@sha256
         tag: 0b62db8afc9b174619186c87084a8952157daa719415c598603be22b63cc1293 # v3.17.1
-      cephFSKernelMountOptions: ms_mode=prefer-crc
-      # NOTE: Enable the driver and shapshotter if you want to use CephFS
-      enableLiveness: true
       serviceMonitor:
         enabled: true
-      enableCephfsDriver: false
-      enableCephfsSnapshotter: false
     image:
       repository: ghcr.io/rook/ceph
     monitoring:
