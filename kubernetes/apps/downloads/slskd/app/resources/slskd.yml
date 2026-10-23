@@ -1,0 +1,9 @@
+integration:
+  scripts:
+    lidarr_import:
+      on:
+        - DownloadDirectoryComplete
+      run:
+        executable: /bin/bash
+        arglist:
+          - /config/lidarr-import.sh

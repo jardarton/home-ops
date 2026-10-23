@@ -5,3 +5,10 @@ resources:
   - ./secret.sops.yaml
   - ./helmrelease.yaml
   - ./service-peer.yaml
+configMapGenerator:
+  - name: slskd-configmap
+    files:
+      - ./resources/slskd.yml
+      - ./resources/lidarr-import.sh
+generatorOptions:
+  disableNameSuffixHash: true
