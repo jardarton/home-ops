@@ -8,6 +8,7 @@ resources:
   - ./radarr/ks.yaml
   - ./sonarr/ks.yaml
   - ./lidarr/ks.yaml
+  - ./slskd/ks.yaml
   - ./prowlarr/ks.yaml
   - ./cross-seed/ks.yaml
   - ./qbittorrent/ks.yaml
