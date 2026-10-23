@@ -26,14 +26,16 @@ spec:
               repository: ghcr.io/slskd/slskd
               tag: 0.26.2@sha256:d0963a3e5b16facd295bf4f2156dad0182f246b1b21a032cae12f5494c694843
             env:
+              LIDARR_URL: http://lidarr.downloads.svc.cluster.local:8686
+              SLSKD_CONFIG: /config/slskd.yml
               SLSKD_HTTP_PORT: &port 5030
               SLSKD_NO_HTTPS: "true"
               SLSKD_NO_VERSION_CHECK: "true"
               SLSKD_SLSK_LISTEN_PORT: 50300
               SLSKD_SHARED_DIR: /mnt/wolf/media/musikk/root
               SLSKD_SHARE_FILTER: \.ini$;Thumbs\.db$;\.DS_Store$
-              SLSKD_DOWNLOADS_DIR: /mnt/wolf/media/musikk/soulseek
-              SLSKD_INCOMPLETE_DIR: /mnt/wolf/media/musikk/soulseek/.incomplete
+              SLSKD_DOWNLOADS_DIR: /mnt/wolf/media/musikk/soulseek/complete
+              SLSKD_INCOMPLETE_DIR: /mnt/wolf/media/musikk/soulseek/incomplete
               SLSKD_REMOTE_FILE_MANAGEMENT: "true"
               SLSKD_UPLOAD_SLOTS: 2
               TZ: Europe/Oslo
@@ -87,6 +89,13 @@ spec:
         existingClaim: slskd
         globalMounts:
           - path: /app
+      config-file:
+        type: configMap
+        name: slskd-configmap
+        defaultMode: 0755
+        globalMounts:
+          - path: /config
+            readOnly: true
       wolf:
         type: nfs
         server: 192.168.1.10
