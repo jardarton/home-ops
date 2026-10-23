@@ -19,8 +19,6 @@ spec:
     substitute:
       APP: *app
       VOLSYNC_CAPACITY: 1Gi
-      VOLSYNC_PUID: "993"
-      VOLSYNC_PGID: "995"
   prune: true
   retryInterval: 2m
   sourceRef:
