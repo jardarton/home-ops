@@ -9,7 +9,7 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: v1.20.9
+    tag: 1.21.0
   url: oci://ghcr.io/rook/rook-ceph-cluster
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
@@ -31,6 +31,10 @@ spec:
     remediation:
       retries: 3
   values:
+    # Pinned so a chart bump can't change the Ceph release.
+    cephImage:
+      repository: quay.io/ceph/ceph
+      tag: v20.2.4
     monitoring:
       enabled: true
       createPrometheusRules: true

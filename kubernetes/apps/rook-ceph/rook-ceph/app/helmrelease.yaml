@@ -9,7 +9,7 @@ spec:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
   ref:
-    tag: v1.20.9
+    tag: 1.21.0
   url: oci://ghcr.io/rook/rook-ceph
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
@@ -32,6 +32,13 @@ spec:
       retries: 3
   values:
     csi:
+      # The 1.21.0 chart dropped this default and renders it empty (off).
+      createCsiOperatorResources: true
+      # cephcsi v3.18 needs x86-64-v3, which one node's CPU lacks (rook/rook#18607).
+      # Digest form, as Rook resets any "quay.io/cephcsi/cephcsi:v3.17" image.
+      cephcsi:
+        repository: quay.io/cephcsi/cephcsi@sha256
+        tag: 0b62db8afc9b174619186c87084a8952157daa719415c598603be22b63cc1293 # v3.17.1
       cephFSKernelMountOptions: ms_mode=prefer-crc
       # NOTE: Enable the driver and shapshotter if you want to use CephFS
       enableLiveness: true
