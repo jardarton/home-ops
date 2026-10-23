@@ -8,7 +8,7 @@ spec:
   timeout: 60s
   url: oci://ghcr.io/ot-container-kit/charts/redis-operator
   ref:
-    tag: 0.25.0
+    tag: 0.27.0
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
@@ -34,9 +34,6 @@ spec:
     remediation:
       retries: 5
   values:
-    # The v0.25.0 image rejects this gate, which the chart now renders by default.
-    featureGates:
-      AvoidCommandLinePassword: null
     resources:
       requests:
         cpu: 50m
