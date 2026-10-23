@@ -1,4 +1,4 @@
-integration:
+integrations:
   scripts:
     lidarr_import:
       on:
