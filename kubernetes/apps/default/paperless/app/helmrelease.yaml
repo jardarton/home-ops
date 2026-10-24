@@ -140,7 +140,24 @@ spec:
           - backendRefs:
               - name: *app
                 port: *port
+    configMaps:
+      s6-deps:
+        data:
+          init-tesseract-langs: ""
     persistence:
+      # Upstream s6 graph lets these run Django checks before OCR languages finish installing
+      s6-deps:
+        type: configMap
+        identifier: s6-deps
+        advancedMounts:
+          paperless:
+            app:
+              - path: /etc/s6-overlay/s6-rc.d/init-search-index/dependencies.d/init-tesseract-langs
+                subPath: init-tesseract-langs
+                readOnly: true
+              - path: /etc/s6-overlay/s6-rc.d/init-llmindex-migrate/dependencies.d/init-tesseract-langs
+                subPath: init-tesseract-langs
+                readOnly: true
       data:
         existingClaim: *app
         advancedMounts:
