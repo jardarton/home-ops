@@ -30,7 +30,7 @@ spec:
           app:
             image:
               repository: registry.${SECRET_DOMAIN}/pippi
-              tag: 9ebe4ec@sha256:b04d33bb7113535c5d1ecb2012e49c088504b8400a0528cac9594be11fefbfd3
+              tag: 465cd34@sha256:8f02095f9cb928dbe47461b35c18421a7dfb4774f8c95f64a595fee217bca9b0
             args: ["gateway"]
             env:
               TZ: Europe/Oslo
@@ -42,8 +42,8 @@ spec:
               PIPPI_WEB_DIR: /app/apps/web/dist
               PIPPI_KEEPER: kubernetes
               # The Bots run the Gateway's own image, and their Environments this one.
-              PIPPI_BOT_IMAGE: registry.${SECRET_DOMAIN}/pippi:9ebe4ec@sha256:b04d33bb7113535c5d1ecb2012e49c088504b8400a0528cac9594be11fefbfd3
-              PIPPI_ENVIRONMENT_IMAGE: registry.${SECRET_DOMAIN}/pippi-environment:9ebe4ec@sha256:5bbeaa290848443acdf8e8a4dfef9cc6db2f6a250497c00cfec5d2512f0eb4ad
+              PIPPI_BOT_IMAGE: registry.${SECRET_DOMAIN}/pippi:465cd34@sha256:8f02095f9cb928dbe47461b35c18421a7dfb4774f8c95f64a595fee217bca9b0
+              PIPPI_ENVIRONMENT_IMAGE: registry.${SECRET_DOMAIN}/pippi-environment:465cd34@sha256:5bbeaa290848443acdf8e8a4dfef9cc6db2f6a250497c00cfec5d2512f0eb4ad
               PIPPI_KUBERNETES_BOT_SECRET: pippi-bots
               PIPPI_KUBERNETES_HOUSEHOLD_SECRET: pippi-household
               PIPPI_KUBERNETES_PULL_SECRET: registry-pull
