@@ -53,7 +53,6 @@ spec:
       static:
         - https://actual.${SECRET_DOMAIN}/
         - https://cli-proxy-api.${SECRET_DOMAIN}/
-        - https://decomp.${SECRET_DOMAIN}/
         - https://echo.${SECRET_DOMAIN}/
         - https://paperless.${SECRET_DOMAIN}/
         - https://lidarr.${SECRET_DOMAIN}/
