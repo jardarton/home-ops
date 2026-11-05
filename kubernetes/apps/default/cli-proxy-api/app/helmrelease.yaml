@@ -26,7 +26,7 @@ spec:
           plugins:
             image:
               repository: ghcr.io/jardarton/cliproxy-key-scopes
-              tag: fdcc59b@sha256:c57d4e5b0c408c8728866fb70e3571a56b308e7bd630587e0793097f1db04eb1
+              tag: f5bc0a2@sha256:d283be5c02f6b69825d826a8b3362199dade88962b1976339cb9042d4d8f8611
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
