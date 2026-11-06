@@ -25,6 +25,15 @@ spec:
         runAsGroup: 100
         fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
+      # ClickHouse needs AVX2, which hp-3's CPU lacks.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values: ["hp-3"]
     controllers:
       clickhouse:
         strategy: Recreate
