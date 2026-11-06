@@ -34,7 +34,7 @@ spec:
           capture:
             image:
               repository: ghcr.io/jardarton/cliproxy-capture
-              tag: 4d4aca5@sha256:02ad985cb65ab77420e3b4c729dfe40683fc926a382b1796d849f36f4edd3fd5
+              tag: 54950de@sha256:f2745cf7fb1006bd5fd84a71d866743d53870932a4b7644a28309eb4835a73ed
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
