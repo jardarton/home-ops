@@ -1,0 +1,26 @@
+<clickhouse>
+    <users>
+        <default remove="remove"/>
+        <admin>
+            <password from_env="CLICKHOUSE_PASSWORD"/>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+            <access_management>1</access_management>
+            <named_collection_control>1</named_collection_control>
+        </admin>
+        <capture>
+            <password from_env="CLICKHOUSE_CAPTURE_PASSWORD"/>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+            <grants>
+                <query>GRANT INSERT ON llm.*</query>
+            </grants>
+        </capture>
+    </users>
+</clickhouse>
