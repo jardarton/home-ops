@@ -2,8 +2,10 @@
 CREATE DATABASE IF NOT EXISTS llm;
 
 -- One row per model execution captured by the cli-proxy-api capture plugin.
--- Sorting by session keeps a session's near-identical request bodies adjacent,
--- which is where most of the compression comes from.
+-- Sorting by session keeps a session's requests adjacent. Each repeats the
+-- conversation so far, so request bodies use 64 MiB compression blocks: ZSTD
+-- finds the repetition only within a block. Other columns keep the default
+-- block size, since every column buffers a full block during merges.
 CREATE TABLE IF NOT EXISTS llm.exchanges
 (
     request_id String,
@@ -30,8 +32,8 @@ CREATE TABLE IF NOT EXISTS llm.exchanges
     user_agent LowCardinality(String),
     request_headers Map(LowCardinality(String), String),
     response_headers Map(LowCardinality(String), String),
-    request String CODEC(ZSTD(3)),
-    upstream_request String CODEC(ZSTD(3)),
+    request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864),
+    upstream_request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864),
     response String CODEC(ZSTD(3)),
     response_raw String CODEC(ZSTD(3)),
     assembled Bool,
@@ -41,7 +43,17 @@ CREATE TABLE IF NOT EXISTS llm.exchanges
 ENGINE = MergeTree
 PARTITION BY toYYYYMM(started_at)
 ORDER BY (session_id, started_at)
-SETTINGS max_compress_block_size = 8388608;
+-- A merge holds up to a block of request data per part it reads.
+SETTINGS max_parts_to_merge_at_once = 4;
+
+-- Bring a table created with older settings up to date. These change metadata
+-- only; existing parts are recompressed as they merge.
+ALTER TABLE llm.exchanges
+    MODIFY COLUMN request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864);
+ALTER TABLE llm.exchanges
+    MODIFY COLUMN upstream_request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864);
+ALTER TABLE llm.exchanges RESET SETTING max_compress_block_size;
+ALTER TABLE llm.exchanges MODIFY SETTING max_parts_to_merge_at_once = 4;
 
 -- One row per upstream call (retries included). Joins exchanges on trace_id.
 CREATE TABLE IF NOT EXISTS llm.usage

@@ -1,0 +1,40 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: clickhouse
+spec:
+  groups:
+    - name: clickhouse.rules
+      rules:
+        # The capture plugin queues rows in memory while ClickHouse is down and
+        # drops the oldest once its queue is full.
+        - alert: ClickHouseDown
+          expr: absent(up{job="clickhouse", namespace="database"} == 1)
+          annotations:
+            summary: >-
+              ClickHouse has been unreachable for 15 minutes; captured LLM traffic is queued and will be dropped once the queue fills.
+          for: 15m
+          labels:
+            severity: warning
+        # A single rejected row clears within minutes; a steady stream of failed
+        # inserts means captures are being refused or dropped.
+        - alert: ClickHouseInsertsFailing
+          expr: rate(ClickHouseProfileEvents_FailedInsertQuery{job="clickhouse", namespace="database"}[15m]) > 0
+          annotations:
+            summary: >-
+              ClickHouse has been rejecting inserts for 30 minutes; check the cli-proxy-api capture logs.
+          for: 30m
+          labels:
+            severity: warning
+        # Merges are limited to a few parts at a time; parts piling up means they
+        # are not keeping up, and inserts fail once a partition has too many.
+        - alert: ClickHouseTooManyParts
+          expr: ClickHouseAsyncMetrics_MaxPartCountForPartition{job="clickhouse", namespace="database"} > 300
+          annotations:
+            summary: >-
+              A ClickHouse partition has {{ $value }} parts; merges are falling behind inserts.
+          for: 1h
+          labels:
+            severity: warning
