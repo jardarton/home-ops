@@ -76,6 +76,8 @@ spec:
         type: emptyDir
         advancedMounts:
           cli-proxy-api:
+            capture:
+              - path: /plugins
             plugins:
               - path: /plugins
             app:
