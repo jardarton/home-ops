@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jardarton/mikkel-rev-chromium
-              tag: sha-4ef15bc@sha256:595775cd13e276a2029104e2aec0fbf2345b2ee0ef8f7173f986893e3502bf89
+              tag: sha-e1b292f@sha256:aabef0ea0d18bd1065acf1d63d6c4038270ac6a358831c5d6f8466183c3ce585
             env:
               # Loopback only: reachable through kubectl port-forward, not the network.
               MIKKEL_REV_DEVTOOLS_PORT: "9222"
