@@ -71,7 +71,11 @@ spec:
             runAsGroup: 1000
             fsGroup: 1000
             fsGroupChangePolicy: OnRootMismatch
-            seccompProfile: {type: RuntimeDefault}
+            # RuntimeDefault plus the user, PID and network namespaces Chromium's sandbox
+            # needs; installed on the nodes by talos/patches/global/machine-seccomp.yaml.
+            seccompProfile:
+              type: Localhost
+              localhostProfile: profiles/chromium-userns.json
     persistence:
       profile:
         existingClaim: *app
