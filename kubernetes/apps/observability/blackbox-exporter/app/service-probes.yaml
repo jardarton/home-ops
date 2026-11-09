@@ -61,7 +61,7 @@ spec:
         - https://radarr.${SECRET_DOMAIN}/
         - https://sonarr.${SECRET_DOMAIN}/
         - https://zigbee2mqtt.${SECRET_DOMAIN}/
-        - https://camofox-browser.${SECRET_DOMAIN}/
+        - https://mikkel-rev.${SECRET_DOMAIN}/healthz
         - https://executor.${SECRET_DOMAIN}/
         - https://makkapakka.${SECRET_DOMAIN}/
         - https://musikk.${SECRET_DOMAIN}/

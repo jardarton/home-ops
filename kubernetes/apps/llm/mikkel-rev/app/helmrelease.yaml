@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app mikkel-rev
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template-v5
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      mikkel-rev:
+        # One Firefox owns the profile at a time.
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/jardarton/mikkel-rev
+              tag: sha-f6fce18@sha256:8bbd46e66a5882c97e8f3917fba61aab0a73d6c00a834e673c3b196c303afe84
+            envFrom:
+              - secretRef:
+                  name: mikkel-rev-secret
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: &httpPort 8080
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+        pod:
+          imagePullSecrets:
+            - name: ghcr-pull
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile: {type: RuntimeDefault}
+    persistence:
+      profile:
+        existingClaim: *app
+        globalMounts:
+          - path: /data/profile
+      tmp:
+        type: emptyDir
+        sizeLimit: 1Gi
+        globalMounts:
+          - path: /tmp
+      # Firefox's content processes share memory through /dev/shm; the runtime's 64 MiB default is too small.
+      shm:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 1Gi
+        globalMounts:
+          - path: /dev/shm
+    service:
+      app:
+        ports:
+          http:
+            port: *httpPort
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
