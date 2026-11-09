@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+# Chromium logged in to personal accounts. Agents reach it only through Executor,
+# which holds the API key; there is no route. Log in by hand over DevTools:
+#   kubectl -n llm port-forward deploy/mikkel-rev-personal 9222
+# then add localhost:9222 under chrome://inspect.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app mikkel-rev-personal
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template-v5
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      mikkel-rev-personal:
+        # One Chromium owns the profile at a time.
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/jardarton/mikkel-rev-chromium
+              tag: sha-4ef15bc@sha256:595775cd13e276a2029104e2aec0fbf2345b2ee0ef8f7173f986893e3502bf89
+            env:
+              # Loopback only: reachable through kubectl port-forward, not the network.
+              MIKKEL_REV_DEVTOOLS_PORT: "9222"
+            envFrom:
+              - secretRef:
+                  name: mikkel-rev-personal-secret
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: &httpPort 8080
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              # Not effective for the non-root server; it only lets Chromium chroot
+              # inside its own sandbox namespaces, which fail without it.
+              capabilities: {drop: ["ALL"], add: ["SYS_CHROOT"]}
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 3Gi
+        pod:
+          imagePullSecrets:
+            - name: ghcr-pull
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile: {type: RuntimeDefault}
+    persistence:
+      profile:
+        existingClaim: *app
+        globalMounts:
+          - path: /data/profile
+      tmp:
+        type: emptyDir
+        sizeLimit: 1Gi
+        globalMounts:
+          - path: /tmp
+      # Chromium's renderers share memory through /dev/shm; the runtime's 64 MiB default is too small.
+      shm:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 1Gi
+        globalMounts:
+          - path: /dev/shm
+    service:
+      app:
+        ports:
+          http:
+            port: *httpPort

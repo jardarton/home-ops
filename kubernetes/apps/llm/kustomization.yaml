@@ -18,3 +18,4 @@ resources:
   - ./makkapakka/ks.yaml
   # - ./open-webui/ks.yaml
   - ./mikkel-rev/ks.yaml
+  - ./mikkel-rev-personal/ks.yaml

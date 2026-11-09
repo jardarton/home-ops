@@ -1,0 +1,32 @@
+# The personal browser reaches the internet and nothing at home: not the LAN, the cluster, or its services.
+# Ingress is left open: the pod listens only on its authenticated API, and Cilium here judges
+# replies to the pod's own calls (such as DNS) as new traffic, which an ingress rule would drop.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mikkel-rev-personal
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mikkel-rev-personal
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 100.64.0.0/10
+              - 169.254.0.0/16
+              - 172.16.0.0/12
+              - 192.168.0.0/16
