@@ -27,7 +27,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jardarton/mikkel-rev
-              tag: sha-f6fce18@sha256:8bbd46e66a5882c97e8f3917fba61aab0a73d6c00a834e673c3b196c303afe84
+              tag: sha-4ef15bc@sha256:390aa2c2396d20f3abfc9a656ed1c0391393f9934997cd8bd24d12369c4e1f53
             envFrom:
               - secretRef:
                   name: mikkel-rev-secret
