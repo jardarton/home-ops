@@ -30,8 +30,8 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/jardarton/mikkel-rev-chromium
-              tag: sha-e1b292f@sha256:aabef0ea0d18bd1065acf1d63d6c4038270ac6a358831c5d6f8466183c3ce585
+              repository: registry.${SECRET_DOMAIN}/mikkel-rev-chromium
+              tag: ecac919@sha256:0d40156676221ffcf477998d75bde699d031860defc4ceb3209333557a1dc150
             env:
               # Loopback only: reachable through kubectl port-forward, not the network.
               MIKKEL_REV_DEVTOOLS_PORT: "9222"
@@ -64,7 +64,7 @@ spec:
                 memory: 3Gi
         pod:
           imagePullSecrets:
-            - name: ghcr-pull
+            - name: registry-pull
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
