@@ -34,7 +34,7 @@ spec:
           app:
             image:
               repository: registry.${SECRET_DOMAIN}/kroner
-              tag: 79e7761@sha256:3ac4dec3eeaf244539c29932927fa941aad3bf5d8e04f2175b601b84f999ffa6
+              tag: aac5d6a@sha256:90459e58efde58ad13c06f3df3c2a0abd674ede5b313620fd2a4556d9271954d
             env:
               TZ: Europe/Oslo
               # Through the route, and from other namespaces such as Pippi's.
