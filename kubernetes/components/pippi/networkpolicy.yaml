@@ -1,5 +1,8 @@
 ---
-# A Bot's Environment reaches the internet and nothing at home: not the LAN, the cluster, or its services.
+# A Bot's Environment reaches nothing at home: not the LAN, the cluster, or its services. What else it reaches, the
+# Keeper says with the pod's `pippi.network` label, and the policies below allow by it. This one allows nothing, so an
+# Environment with no label, or one no policy here knows, reaches nothing at all, as one labelled `none` does: not even
+# DNS, which carries data out as well as any request.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -9,6 +12,19 @@ spec:
     matchLabels:
       app.kubernetes.io/name: pippi
       app.kubernetes.io/component: environment
+  policyTypes: ["Ingress", "Egress"]
+---
+# `internet`: all of it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pippi-environments-internet
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: pippi
+      app.kubernetes.io/component: environment
+      pippi.network: internet
   policyTypes: ["Ingress", "Egress"]
   # Only the replies of the cluster's DNS: Cilium here judges them, coming from the Service's address, as new traffic,
   # and dropped them, so lookups took seconds or failed. Nothing else may reach an Environment.
@@ -40,6 +56,46 @@ spec:
               - 169.254.0.0/16
               - 172.16.0.0/12
               - 192.168.0.0/16
+---
+# `registries`: the package registries and GitHub over HTTPS, to install what a Bot needs, and nothing else. Only their
+# names resolve, so a lookup carries nothing out either. The addresses allowed are the ones those names resolved to,
+# which other sites on the same hosts share.
+# yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cilium.io/ciliumnetworkpolicy_v2.json
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: pippi-environments-registries
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: pippi
+      app.kubernetes.io/component: environment
+      pippi.network: registries
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - {port: "53", protocol: ANY}
+          rules:
+            dns: &registries
+              - matchName: registry.npmjs.org
+              - matchName: pypi.org
+              - matchName: files.pythonhosted.org
+              - matchName: github.com
+              - matchName: codeload.github.com
+              - matchPattern: "*.githubusercontent.com"
+    - toFQDNs: *registries
+      toPorts:
+        - ports:
+            - {port: "443", protocol: TCP}
 ---
 # Only the Gateway reaches a Bot's RPC. The other ports stay open because Cilium here judges the replies to a Bot's own
 # calls to services, such as Executor, DNS, and the API server, as new traffic; the Bot listens on nothing else.
