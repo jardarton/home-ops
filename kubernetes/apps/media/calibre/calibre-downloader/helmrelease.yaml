@@ -19,10 +19,9 @@ spec:
   values:
     defaultPodOptions:
       securityContext:
+        # Matches the owner of the NFS ingest share, which CWA reads.
         runAsUser: 1000
         runAsGroup: 1000
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
         runAsNonRoot: true
         seccompProfile: {type: RuntimeDefault}
     controllers:
@@ -30,19 +29,14 @@ spec:
         containers:
           app:
             image:
-              repository: ghcr.io/calibrain/calibre-web-automated-book-downloader-extbp
-              tag: v1.3.15@sha256:1f80174eb7e271a0fde8fa483b221e0478e9ff5788e104c3d934774c40fdb6e6
+              repository: ghcr.io/jardarton/bokhent
+              tag: 0.1.0@sha256:03b7bc789c5cfa52d5f01e0d62b789a665895cad7fa7546d6cc494d5215c87e8
             env:
-              FLASK_PORT: &port 8084
-              INGEST_DIR: &ingest /cwa-book-ingest
-              BOOK_LANGUAGE: en
-              DEFAULT_SLEEP: 15
-              USE_BOOK_TITLE: true
-              LOG_LEVEL: debug
-              LOG_ROOT: /config/logs
-              TMP_DIR: /config/tmp
+              BOKHENT_ADDR: ":8080"
+              BOKHENT_INGEST_DIR: &ingest /cwa-book-ingest
+              BOKHENT_SOURCES: url
+              BOKHENT_LOG_LEVEL: info
               TZ: Europe/Oslo
-              EXT_BYPASSER_URL: http://flaresolverr.default.svc.cluster.local:8191
             probes:
               liveness: &probes
                 enabled: true
@@ -50,31 +44,20 @@ spec:
                 spec:
                   httpGet:
                     path: /api/health
-                    port: *port
+                    port: &port 8080
+                  periodSeconds: 30
                   timeoutSeconds: 5
               readiness: *probes
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /api/health
-                    port: *port
-                  failureThreshold: 30
-                  periodSeconds: 10
-                  timeoutSeconds: 5
             resources:
               requests:
                 cpu: 10m
-                memory: 150Mi
+                memory: 32Mi
               limits:
-                memory: 500Mi
+                memory: 256Mi
             securityContext:
-              readOnlyRootFilesystem: false
-              capabilities:
-                drop:
-                  - ALL
+              readOnlyRootFilesystem: true
               allowPrivilegeEscalation: false
+              capabilities: {drop: ["ALL"]}
     service:
       app:
         controller: *app
@@ -88,18 +71,7 @@ spec:
           - name: internal
             namespace: kube-system
             sectionName: https
-            # rules:
-            #   - backendRefs:
-            #       - name: *app
-            #         port: *port
-            #     timeouts:
-            #       request: 0s
     persistence:
-      config:
-        enabled: true
-        existingClaim: *app
-        globalMounts:
-          - path: /config
       ingest:
         type: nfs
         server: 192.168.1.10
