@@ -75,6 +75,8 @@ spec:
               SERVER_ROOT: /public
               SERVER_HEALTH: "true"
               SERVER_DIRECTORY_LISTING: "false"
+              # ConfigMap files are symlinks; containment in SERVER_ROOT is still enforced.
+              SERVER_DISABLE_SYMLINKS: "false"
             probes:
               liveness: &specsProbes
                 enabled: true
