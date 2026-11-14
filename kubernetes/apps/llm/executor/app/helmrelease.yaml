@@ -59,6 +59,42 @@ spec:
                 memory: 256Mi
               limits:
                 memory: 2Gi
+      specs:
+        pod:
+          securityContext:
+            runAsNonRoot: true
+            runAsGroup: 10000
+            runAsUser: 10000
+        containers:
+          app:
+            image:
+              repository: ghcr.io/static-web-server/static-web-server
+              tag: 2.44.1@sha256:94618e3d17802265a21926217e6f9e7832b311b6fbf5933684001739fafed06a
+            env:
+              SERVER_PORT: &specsPort 8080
+              SERVER_ROOT: /public
+              SERVER_HEALTH: "true"
+              SERVER_DIRECTORY_LISTING: "false"
+            probes:
+              liveness: &specsProbes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: *specsPort
+                  periodSeconds: 30
+              readiness: *specsProbes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: {drop: ["ALL"]}
+            resources:
+              requests:
+                cpu: 5m
+                memory: 16Mi
+              limits:
+                memory: 64Mi
     persistence:
       data:
         existingClaim: executor
@@ -66,11 +102,26 @@ spec:
           executor:
             app:
               - path: /data
+      specs:
+        type: configMap
+        name: executor-specs
+        advancedMounts:
+          specs:
+            app:
+              - path: /public
+                readOnly: true
     service:
       app:
+        controller: executor
+        forceRename: executor
         ports:
           http:
             port: *httpPort
+      specs:
+        controller: specs
+        ports:
+          http:
+            port: *specsPort
     route:
       app:
         hostnames:

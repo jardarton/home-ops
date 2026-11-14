@@ -1,0 +1,365 @@
+openapi: 3.0.3
+info:
+  title: qBittorrent Web API
+  version: "2.11"
+  description: >-
+    Subset of the qBittorrent 5.x Web API (v2). Hashes parameters take one or more
+    torrent info-hashes separated by "|", or "all".
+servers:
+  - url: http://qbittorrent.downloads.svc.cluster.local:8888/api/v2
+security:
+  - webApiKey: []
+tags:
+  - name: app
+  - name: transfer
+  - name: torrents
+paths:
+  /app/version:
+    get:
+      operationId: getAppVersion
+      tags: [app]
+      summary: qBittorrent application version
+      responses:
+        "200":
+          description: Version string, e.g. v5.2.3
+          content:
+            text/plain:
+              schema: {type: string}
+  /app/webapiVersion:
+    get:
+      operationId: getWebApiVersion
+      tags: [app]
+      summary: Web API version
+      responses:
+        "200":
+          description: Version string
+          content:
+            text/plain:
+              schema: {type: string}
+  /app/defaultSavePath:
+    get:
+      operationId: getDefaultSavePath
+      tags: [app]
+      summary: Default save path for new torrents
+      responses:
+        "200":
+          description: Path
+          content:
+            text/plain:
+              schema: {type: string}
+  /transfer/info:
+    get:
+      operationId: getTransferInfo
+      tags: [transfer]
+      summary: Global transfer info (speeds, totals, connection status)
+      responses:
+        "200":
+          description: Transfer info
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/TransferInfo"}
+  /torrents/info:
+    get:
+      operationId: listTorrents
+      tags: [torrents]
+      summary: List torrents, optionally filtered and sorted
+      parameters:
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [all, downloading, seeding, completed, stopped, running, active, inactive, stalled, stalled_uploading, stalled_downloading, checking, moving, errored]
+        - name: category
+          in: query
+          description: Category name; empty string means uncategorized
+          schema: {type: string}
+        - name: tag
+          in: query
+          description: Tag name; empty string means untagged
+          schema: {type: string}
+        - name: sort
+          in: query
+          description: Field to sort by, e.g. added_on, name, progress, dlspeed, size, ratio
+          schema: {type: string}
+        - name: reverse
+          in: query
+          schema: {type: boolean}
+        - name: limit
+          in: query
+          schema: {type: integer}
+        - name: offset
+          in: query
+          schema: {type: integer}
+        - name: hashes
+          in: query
+          description: Hashes separated by "|"
+          schema: {type: string}
+      responses:
+        "200":
+          description: Torrents
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/Torrent"}
+  /torrents/properties:
+    get:
+      operationId: getTorrentProperties
+      tags: [torrents]
+      summary: Detailed properties of one torrent
+      parameters:
+        - {$ref: "#/components/parameters/Hash"}
+      responses:
+        "200":
+          description: Properties
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: true}
+  /torrents/trackers:
+    get:
+      operationId: getTorrentTrackers
+      tags: [torrents]
+      summary: Trackers of one torrent
+      parameters:
+        - {$ref: "#/components/parameters/Hash"}
+      responses:
+        "200":
+          description: Trackers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: object, additionalProperties: true}
+  /torrents/files:
+    get:
+      operationId: getTorrentFiles
+      tags: [torrents]
+      summary: Files of one torrent
+      parameters:
+        - {$ref: "#/components/parameters/Hash"}
+      responses:
+        "200":
+          description: Files
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: object, additionalProperties: true}
+  /torrents/categories:
+    get:
+      operationId: listCategories
+      tags: [torrents]
+      summary: All categories, keyed by name
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: true}
+  /torrents/tags:
+    get:
+      operationId: listTags
+      tags: [torrents]
+      summary: All tags
+      responses:
+        "200":
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {type: string}
+  /torrents/add:
+    post:
+      operationId: addTorrents
+      tags: [torrents]
+      summary: Add torrents from magnet links or URLs
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [urls]
+              properties:
+                urls:
+                  type: string
+                  description: Magnet links or .torrent URLs, one per line
+                savepath: {type: string}
+                category: {type: string}
+                tags:
+                  type: string
+                  description: Comma-separated tags
+                stopped:
+                  type: boolean
+                  description: Add in stopped state
+                sequentialDownload: {type: boolean}
+                firstLastPiecePrio: {type: boolean}
+      responses:
+        "200":
+          description: Ok. on success, Fails. if nothing was added
+          content:
+            text/plain:
+              schema: {type: string}
+  /torrents/stop:
+    post:
+      operationId: stopTorrents
+      tags: [torrents]
+      summary: Stop (pause) torrents
+      requestBody: {$ref: "#/components/requestBodies/Hashes"}
+      responses:
+        "200": {description: Ok}
+  /torrents/start:
+    post:
+      operationId: startTorrents
+      tags: [torrents]
+      summary: Start (resume) torrents
+      requestBody: {$ref: "#/components/requestBodies/Hashes"}
+      responses:
+        "200": {description: Ok}
+  /torrents/recheck:
+    post:
+      operationId: recheckTorrents
+      tags: [torrents]
+      summary: Recheck torrent data
+      requestBody: {$ref: "#/components/requestBodies/Hashes"}
+      responses:
+        "200": {description: Ok}
+  /torrents/reannounce:
+    post:
+      operationId: reannounceTorrents
+      tags: [torrents]
+      summary: Reannounce torrents to their trackers
+      requestBody: {$ref: "#/components/requestBodies/Hashes"}
+      responses:
+        "200": {description: Ok}
+  /torrents/delete:
+    post:
+      operationId: deleteTorrents
+      tags: [torrents]
+      summary: Remove torrents, optionally deleting their downloaded files
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [hashes, deleteFiles]
+              properties:
+                hashes: {type: string, description: 'Hashes separated by "|", or "all"'}
+                deleteFiles: {type: boolean}
+      responses:
+        "200": {description: Ok}
+  /torrents/setCategory:
+    post:
+      operationId: setTorrentCategory
+      tags: [torrents]
+      summary: Set the category of torrents (empty string clears it)
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [hashes, category]
+              properties:
+                hashes: {type: string}
+                category: {type: string}
+      responses:
+        "200": {description: Ok}
+        "409": {description: Category does not exist}
+  /torrents/addTags:
+    post:
+      operationId: addTorrentTags
+      tags: [torrents]
+      summary: Add tags to torrents
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [hashes, tags]
+              properties:
+                hashes: {type: string}
+                tags: {type: string, description: Comma-separated tags}
+      responses:
+        "200": {description: Ok}
+  /torrents/removeTags:
+    post:
+      operationId: removeTorrentTags
+      tags: [torrents]
+      summary: Remove tags from torrents (empty tags removes all)
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [hashes]
+              properties:
+                hashes: {type: string}
+                tags: {type: string, description: Comma-separated tags}
+      responses:
+        "200": {description: Ok}
+components:
+  securitySchemes:
+    webApiKey:
+      type: http
+      scheme: bearer
+      description: qBittorrent Web API key (WebUI\\APIKey)
+  parameters:
+    Hash:
+      name: hash
+      in: query
+      required: true
+      description: Torrent info-hash
+      schema: {type: string}
+  requestBodies:
+    Hashes:
+      required: true
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required: [hashes]
+            properties:
+              hashes: {type: string, description: 'Hashes separated by "|", or "all"'}
+  schemas:
+    TransferInfo:
+      type: object
+      additionalProperties: true
+      properties:
+        dl_info_speed: {type: integer, description: Download speed, bytes/s}
+        dl_info_data: {type: integer}
+        up_info_speed: {type: integer, description: Upload speed, bytes/s}
+        up_info_data: {type: integer}
+        dl_rate_limit: {type: integer}
+        up_rate_limit: {type: integer}
+        dht_nodes: {type: integer}
+        connection_status: {type: string}
+    Torrent:
+      type: object
+      additionalProperties: true
+      properties:
+        hash: {type: string}
+        name: {type: string}
+        state: {type: string}
+        progress: {type: number}
+        size: {type: integer}
+        total_size: {type: integer}
+        downloaded: {type: integer}
+        uploaded: {type: integer}
+        dlspeed: {type: integer}
+        upspeed: {type: integer}
+        eta: {type: integer}
+        ratio: {type: number}
+        num_seeds: {type: integer}
+        num_leechs: {type: integer}
+        category: {type: string}
+        tags: {type: string}
+        save_path: {type: string}
+        content_path: {type: string}
+        added_on: {type: integer}
+        completion_on: {type: integer}
+        tracker: {type: string}
