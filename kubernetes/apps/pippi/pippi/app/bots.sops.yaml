@@ -6,6 +6,7 @@ stringData:
   EXECUTOR_API_KEY: ENC[AES256_GCM,data:yWj9ZygBhQeyI0ObVdVzlA5qyhNWQ3ClDKo0zwbQiLNwaWlxJp7ZNX9ql0Dg+4B9GU08CW0b90hws5mQsg5D1w==,iv:yfT2NJUSaDgiYyXqt33LY1/IFYrAdfn8Fh5V7kpoV84=,tag:V02sn6rdsKwB9kAJjxGTrQ==,type:str]
   CLIPROXYAPI_API_KEY: ENC[AES256_GCM,data:SgWeolNIq81ea0LAfQyZRPMiXICEswTVa1LS/XUNmT2qqaWDNykUc6f891uK11C6dg==,iv:DTwgLH/1tY6C1aZAI9ouxn9C/GKjr2NGi+61rk/jtnk=,tag:wpZm8pq1XqLdKOx0PPmujg==,type:str]
   CLIPROXYAPI_BASE_URL: ENC[AES256_GCM,data:eHnMnH65a5e1iNDsxYQI0u9D4y3gbSXDICkd/hzQpzkZt2l+rvvQQknTOF2qLEvlVWzS,iv:46+90poJiM6NxdRNGtGuX79+MOZQslSF7A53z7krWXU=,tag:s8cff6+s4h+CI3eaPryICA==,type:str]
+  PIPPI_ENV: ENC[AES256_GCM,data:0cwR/5ZOk2jsvqqmsT53r2p1jqeUniBgl1kbSVfB0KekK5sy0y/ZT1VoooBvZQcqgzg6jF81H+PCfPYw/29IpMDyTQO3Uno/kcFsqttg/3bPwJIPvA9jY7yQvnNx7Av/BcDribKX9AN6Y41yGfACmCX6a9966WmcftXcZho=,iv:v+2FQjcoJhcDsQZGH4c1jqSzzUwDeGl0DVOtaow/rEg=,tag:vztpNVNoq9y7kkuknst7sw==,type:str]
 sops:
   age:
     - enc: |
@@ -18,7 +19,7 @@ sops:
         -----END AGE ENCRYPTED FILE-----
       recipient: age1yw4z4shdemtcqwee8d7uxl7slw9mertg6dulakpup5nca66lwysqpkpvuu
   encrypted_regex: ^(data|stringData)$
-  lastmodified: "2026-11-11T13:54:56Z"
-  mac: ENC[AES256_GCM,data:KnnZmlKwJ4v0MhXGbS3TtS5DTneCO2KYpFKcNyk4CPEbfCMkoBx7aEwaxH/9r5wM+eU8PFAy6WLswWxuKBzDdrG7eoYy4CRfuCEj5s3B2qWv2oW68ZMMCUQ/PrJKFeopc1/VrLWrDj3D5mfJOSoAlSMIgef8/anPqFoDcs9TjMU=,iv:qTEYOIvGnCZALeimz4xH+qsD5Ni09thU6MKb59TQNzM=,tag:rJGmShHYrHR53Mriuit6dQ==,type:str]
+  lastmodified: "2026-11-18T15:33:34Z"
+  mac: ENC[AES256_GCM,data:aZXGsjMrlTu+eDoH9j81O7F2SC07SFuhDzmGYVUCR+sBJaMSdXyoPFGsoajrmnVoHAPRwbltSlOsAhqL/TRfuuE4VA+hc9q6thhA/XT3tWgPkX6M1kWuFgXeoNO6GM2au9xzrZH+aoPzOhQRPVoRh/mP/Tfn1/iHBEq902U2m08=,iv:730FeZbm7zAUoTJQ9M/ak7o1eS1xyWtkt4MGAGGBegk=,tag:6XxYW49msnbVy/P8tvcYeA==,type:str]
   mac_only_encrypted: true
   version: 3.13.3
