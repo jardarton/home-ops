@@ -137,14 +137,51 @@ paths:
       summary: Files of one torrent
       parameters:
         - {$ref: "#/components/parameters/Hash"}
+        - name: indexes
+          in: query
+          description: File indexes separated by "|". Omit to return all files.
+          schema: {type: string}
       responses:
         "200":
-          description: Files
+          description: Files, or an empty array while torrent metadata is unavailable
           content:
             application/json:
               schema:
                 type: array
-                items: {type: object, additionalProperties: true}
+                items:
+                  type: object
+                  additionalProperties: true
+                  required: [index, name, priority]
+                  properties:
+                    index: {type: integer, minimum: 0, description: File ID for setTorrentFilePriority}
+                    name: {type: string}
+                    priority: {$ref: "#/components/schemas/FilePriority"}
+        "404": {description: Torrent not found}
+        "409": {description: Invalid or out-of-range file index}
+  /torrents/filePrio:
+    post:
+      operationId: setTorrentFilePriority
+      tags: [torrents]
+      summary: Select or skip files in an added torrent, or change their download priority
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [hash, id, priority]
+              properties:
+                hash: {type: string, description: Torrent info-hash}
+                id:
+                  type: string
+                  description: File index values from getTorrentFiles, separated by "|".
+                  example: "0|2"
+                priority: {$ref: "#/components/schemas/FilePriority"}
+      responses:
+        "200": {description: Priority set}
+        "400": {description: Invalid priority or non-integer file ID}
+        "404": {description: Torrent not found}
+        "409": {description: Torrent metadata is unavailable or a file index is out of range}
   /torrents/categories:
     get:
       operationId: listCategories
@@ -169,6 +206,54 @@ paths:
               schema:
                 type: array
                 items: {type: string}
+  /torrents/fetchMetadata:
+    post:
+      operationId: fetchTorrentMetadata
+      tags: [torrents]
+      summary: Preview torrent files before adding a magnet link or .torrent URL
+      description: >-
+        If metadata is pending, retry with the same source until info.files is returned.
+        Use the same connection and source in addTorrents to apply file priorities in that file order.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [source]
+              properties:
+                source: {type: string, description: Magnet link or .torrent URL}
+      responses:
+        "200":
+          description: Torrent metadata including its file list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                required: [info]
+                properties:
+                  hash: {type: string}
+                  info:
+                    type: object
+                    additionalProperties: true
+                    required: [files]
+                    properties:
+                      name: {type: string}
+                      files:
+                        type: array
+                        items:
+                          type: object
+                          required: [path, length]
+                          properties:
+                            path: {type: string}
+                            length: {type: integer, format: int64, description: File size in bytes}
+        "202":
+          description: Metadata is pending. The response contains any known hashes and may be empty.
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: true}
+        "400": {description: Invalid source or metadata could not be requested}
   /torrents/add:
     post:
       operationId: addTorrents
@@ -193,14 +278,35 @@ paths:
                 stopped:
                   type: boolean
                   description: Add in stopped state
+                forced:
+                  type: boolean
+                  description: Start in forced mode, bypassing queue limits
+                stopCondition:
+                  type: string
+                  enum: [None, MetadataReceived, FilesChecked]
+                  description: Use MetadataReceived to stop a magnet after fetching metadata for file selection.
+                filePriorities:
+                  type: string
+                  description: >-
+                    For one link with metadata loaded by fetchTorrentMetadata, provide one comma-separated
+                    priority per file in the returned order. Use 0 to skip, 1 for normal, 6 for high,
+                    or 7 for maximum priority.
+                  example: "1,0,6"
                 sequentialDownload: {type: boolean}
                 firstLastPiecePrio: {type: boolean}
       responses:
         "200":
-          description: Ok. on success, Fails. if nothing was added
+          description: Torrent add results
           content:
-            text/plain:
-              schema: {type: string}
+            application/json:
+              schema: {$ref: "#/components/schemas/AddTorrentsResult"}
+        "202":
+          description: One or more torrent adds are pending
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AddTorrentsResult"}
+        "400": {description: Invalid add parameters or file priorities}
+        "409": {description: No torrents were added}
   /torrents/stop:
     post:
       operationId: stopTorrents
@@ -217,6 +323,26 @@ paths:
       requestBody: {$ref: "#/components/requestBodies/Hashes"}
       responses:
         "200": {description: Ok}
+  /torrents/setForceStart:
+    post:
+      operationId: setTorrentForceStart
+      tags: [torrents]
+      summary: Force start torrents or return them to normal queue management
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [hashes, value]
+              properties:
+                hashes: {type: string, description: 'Hashes separated by "|", or "all"'}
+                value:
+                  type: boolean
+                  description: True starts in forced mode. False starts in normal queue-managed mode.
+      responses:
+        "200": {description: Start mode set}
+        "400": {description: Missing required parameters}
   /torrents/recheck:
     post:
       operationId: recheckTorrents
@@ -326,13 +452,27 @@ components:
             properties:
               hashes: {type: string, description: 'Hashes separated by "|", or "all"'}
   schemas:
+    FilePriority:
+      type: integer
+      enum: [0, 1, 6, 7]
+      description: 0 skips the file, 1 is normal, 6 is high, and 7 is maximum priority.
+    AddTorrentsResult:
+      type: object
+      required: [success_count, failure_count, pending_count, added_torrent_ids]
+      properties:
+        success_count: {type: integer}
+        failure_count: {type: integer}
+        pending_count: {type: integer}
+        added_torrent_ids:
+          type: array
+          items: {type: string}
     TransferInfo:
       type: object
       additionalProperties: true
       properties:
-        dl_info_speed: {type: integer, description: Download speed, bytes/s}
+        dl_info_speed: {type: integer, description: "Download speed, bytes/s"}
         dl_info_data: {type: integer}
-        up_info_speed: {type: integer, description: Upload speed, bytes/s}
+        up_info_speed: {type: integer, description: "Upload speed, bytes/s"}
         up_info_data: {type: integer}
         dl_rate_limit: {type: integer}
         up_rate_limit: {type: integer}
@@ -343,6 +483,7 @@ components:
       additionalProperties: true
       properties:
         hash: {type: string}
+        force_start: {type: boolean, description: Whether the torrent is in forced mode}
         name: {type: string}
         state: {type: string}
         progress: {type: number}
