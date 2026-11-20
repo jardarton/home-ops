@@ -19,3 +19,4 @@ resources:
   # - ./open-webui/ks.yaml
   - ./mikkel-rev/ks.yaml
   - ./mikkel-rev-personal/ks.yaml
+  - ./openfinn/ks.yaml
