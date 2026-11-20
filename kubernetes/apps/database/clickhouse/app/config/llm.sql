@@ -1,11 +1,27 @@
 -- Applied on every start; keep statements idempotent.
 CREATE DATABASE IF NOT EXISTS llm;
 
+-- Each request message once, keyed by the first 16 bytes of the SHA-256 of
+-- its exact bytes. Agents resend the whole conversation on every request, so
+-- exchanges reference messages here instead of repeating them. The plugin may
+-- send a message again after a restart; merges collapse the copies.
+CREATE TABLE IF NOT EXISTS llm.messages
+(
+    id UUID,
+    first_seen DateTime64(3, 'UTC'),
+    body String CODEC(ZSTD(3))
+)
+ENGINE = ReplacingMergeTree
+ORDER BY id;
+
 -- One row per model execution captured by the cli-proxy-api capture plugin.
--- Sorting by session keeps a session's requests adjacent. Each repeats the
--- conversation so far, so request bodies use 64 MiB compression blocks: ZSTD
--- finds the repetition only within a block. Other columns keep the default
--- block size, since every column buffers a full block during merges.
+-- When request_messages_at > 0, request is the body with its message array
+-- removed at that byte offset, and request_messages lists the array's
+-- messages; llm.request rebuilds the body. Otherwise request is the
+-- whole body. Sorting by session keeps a session's requests adjacent, and
+-- request bodies use 64 MiB compression blocks so ZSTD finds what repeats
+-- between them (tools, system prompt). Other columns keep the default block
+-- size, since every column buffers a full block during merges.
 CREATE TABLE IF NOT EXISTS llm.exchanges
 (
     request_id String,
@@ -33,6 +49,8 @@ CREATE TABLE IF NOT EXISTS llm.exchanges
     request_headers Map(LowCardinality(String), String),
     response_headers Map(LowCardinality(String), String),
     request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864),
+    request_messages_at UInt32,
+    request_messages Array(UUID),
     upstream_request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864),
     response String CODEC(ZSTD(3)),
     response_raw String CODEC(ZSTD(3)),
@@ -54,6 +72,8 @@ ALTER TABLE llm.exchanges
     MODIFY COLUMN upstream_request String CODEC(ZSTD(9)) SETTINGS (min_compress_block_size = 67108864, max_compress_block_size = 67108864);
 ALTER TABLE llm.exchanges RESET SETTING max_compress_block_size;
 ALTER TABLE llm.exchanges MODIFY SETTING max_parts_to_merge_at_once = 4;
+ALTER TABLE llm.exchanges ADD COLUMN IF NOT EXISTS request_messages_at UInt32 AFTER request;
+ALTER TABLE llm.exchanges ADD COLUMN IF NOT EXISTS request_messages Array(UUID) AFTER request_messages_at;
 
 -- One row per upstream call (retries included). Joins exchanges on trace_id.
 CREATE TABLE IF NOT EXISTS llm.usage
@@ -116,16 +136,85 @@ FROM llm.usage
 WHERE session_id != ''
 GROUP BY session_id;
 
--- The last request of a session carries its whole conversation so far.
-CREATE VIEW IF NOT EXISTS llm.transcripts AS
+-- One exchange with its request body rebuilt from llm.messages:
+--   SELECT request FROM llm.request(id = '<request_id>')
+CREATE OR REPLACE VIEW llm.request AS
+WITH
+    ex AS (
+        SELECT request_id, session_id, started_at, model, outcome,
+            request, request_messages_at, request_messages, response
+        FROM llm.exchanges
+        WHERE request_id = {id:String}
+        LIMIT 1
+    ),
+    parts AS (
+        SELECT n, id
+        FROM ex
+        ARRAY JOIN request_messages AS id, arrayEnumerate(request_messages) AS n
+    ),
+    messages AS (
+        SELECT arrayStringConcat(arrayMap(x -> x.2, arraySort(groupArray((p.n, b.body)))), ',') AS joined
+        FROM parts AS p
+        INNER JOIN
+        (
+            SELECT id, any(body) AS body
+            FROM llm.messages
+            WHERE id IN (SELECT id FROM parts)
+            GROUP BY id
+        ) AS b ON p.id = b.id
+    )
+SELECT
+    request_id, session_id, started_at, model, outcome,
+    if(request_messages_at = 0, request,
+        concat(substring(request, 1, request_messages_at), '[', joined, ']',
+            substring(request, request_messages_at + 1))) AS request,
+    response
+FROM ex CROSS JOIN messages;
+
+-- A session's last successful exchange, whose request carries the whole
+-- conversation so far: SELECT request, response FROM llm.transcript(session = '<session_id>')
+CREATE OR REPLACE VIEW llm.transcript AS
+WITH
+    ex AS (
+        SELECT request_id, session_id, started_at, model, outcome,
+            request, request_messages_at, request_messages, response
+        FROM llm.exchanges
+        WHERE session_id = {session:String} AND outcome = 'succeeded'
+        ORDER BY started_at DESC
+        LIMIT 1
+    ),
+    parts AS (
+        SELECT n, id
+        FROM ex
+        ARRAY JOIN request_messages AS id, arrayEnumerate(request_messages) AS n
+    ),
+    messages AS (
+        SELECT arrayStringConcat(arrayMap(x -> x.2, arraySort(groupArray((p.n, b.body)))), ',') AS joined
+        FROM parts AS p
+        INNER JOIN
+        (
+            SELECT id, any(body) AS body
+            FROM llm.messages
+            WHERE id IN (SELECT id FROM parts)
+            GROUP BY id
+        ) AS b ON p.id = b.id
+    )
+SELECT
+    request_id, session_id, started_at, model, outcome,
+    if(request_messages_at = 0, request,
+        concat(substring(request, 1, request_messages_at), '[', joined, ']',
+            substring(request, request_messages_at + 1))) AS request,
+    response
+FROM ex CROSS JOIN messages;
+
+-- One row per session; llm.transcript returns the conversation.
+CREATE OR REPLACE VIEW llm.transcripts AS
 SELECT
     session_id,
     min(started_at) AS first_at,
     max(started_at) AS last_at,
     count() AS exchanges,
-    argMax(model, started_at) AS model,
-    argMax(request, started_at) AS last_request,
-    argMax(response, started_at) AS last_response
+    argMax(model, started_at) AS model
 FROM llm.exchanges
 WHERE session_id != '' AND outcome = 'succeeded'
 GROUP BY session_id;
