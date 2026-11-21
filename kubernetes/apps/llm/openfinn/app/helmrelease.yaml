@@ -43,7 +43,7 @@ spec:
           app:
             image: &image
               repository: registry.${SECRET_DOMAIN}/openfinn-hub
-              tag: 7552912@sha256:d7d343c483a7d682de70bb5320766ea3f49cfce3761c62d163be8ae5808385aa
+              tag: c43c746@sha256:2340db126a8f078d976609cb6b1953051c2b2c55018703b5267a2ae85922084f
             env: &env
               TZ: Europe/Oslo
               # Reads take the logged-out phone first.
