@@ -43,7 +43,7 @@ spec:
           app:
             image: &image
               repository: registry.${SECRET_DOMAIN}/openfinn-hub
-              tag: c43c746@sha256:2340db126a8f078d976609cb6b1953051c2b2c55018703b5267a2ae85922084f
+              tag: f246aab@sha256:0f5b6cf15df58fbe08833e5bb7d92102bb23fa57959100d400241a0d38100600
             env: &env
               TZ: Europe/Oslo
               # Reads take the logged-out phone first.
@@ -129,6 +129,7 @@ spec:
                 {"name":"PS1 consoles","watch":"ps1-consoles","segment":["type=console","model=ps1"]}]
               OPENFINN_LABELING_COMMAND: '["openfinn-labeler"]'
               OPENFINN_LABELING_MAX_LISTINGS: "300"
+              OPENFINN_LABELING_MAX_IMAGE_LISTINGS: "20"
               OPENFINN_LABELER_BASE_URL: http://cli-proxy-api.default.svc.cluster.local:8317
               OPENFINN_LABELER_API_KEY_FILE: /secrets/LABELER_API_KEY
             securityContext: *securityContext
