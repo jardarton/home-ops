@@ -84,3 +84,24 @@ spec:
           for: 1h
           labels:
             severity: warning
+        - alert: BaseBackupTooOld
+          annotations:
+            description: The newest barman-cloud base backup of {{ $labels.cluster }} is {{ $value | humanizeDuration }} old.
+            summary: A daily CNPG base backup to Garage has not succeeded for over 26 hours.
+          expr: |-
+            time() - max by (cluster) (
+              label_replace(barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{namespace="database"}, "cluster", "$1", "pod", "(.+)-[0-9]+")
+            ) > 26 * 3600
+          for: 15m
+          labels:
+            severity: warning
+        - alert: BaseBackupMetricsMissing
+          annotations:
+            description: No barman-cloud backup metrics for a CNPG cluster; its plugin sidecar may be missing.
+            summary: CNPG backup metrics are missing.
+          expr: |-
+            absent(barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{namespace="database", pod=~"home-ops-[0-9]+"})
+            or absent(barman_cloud_cloudnative_pg_io_last_available_backup_timestamp{namespace="database", pod=~"immich-[0-9]+"})
+          for: 1h
+          labels:
+            severity: warning

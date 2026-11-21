@@ -41,3 +41,8 @@ spec:
     volumeSnapshot:
       className: csi-ceph-blockpool
       snapshotOwnerReference: cluster
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: immich-garage
