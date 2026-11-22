@@ -43,7 +43,7 @@ spec:
           app:
             image: &image
               repository: registry.${SECRET_DOMAIN}/openfinn-hub
-              tag: f246aab@sha256:0f5b6cf15df58fbe08833e5bb7d92102bb23fa57959100d400241a0d38100600
+              tag: fc82b33@sha256:a34981339a6d817c3b4d203492aea328f0299914585a1d91b18aff6b4ff5279e
             env: &env
               TZ: Europe/Oslo
               # Reads take the logged-out phone first.
@@ -132,6 +132,8 @@ spec:
               OPENFINN_LABELING_MAX_IMAGE_LISTINGS: "20"
               OPENFINN_LABELER_BASE_URL: http://cli-proxy-api.default.svc.cluster.local:8317
               OPENFINN_LABELER_API_KEY_FILE: /secrets/LABELER_API_KEY
+              # Labels a chunk gpt-6-luna fails, as when the ChatGPT usage limit is hit.
+              OPENFINN_LABELER_FALLBACK_MODEL: deepseek/deepseek-v4.1-flash
             securityContext: *securityContext
             resources:
               requests:
