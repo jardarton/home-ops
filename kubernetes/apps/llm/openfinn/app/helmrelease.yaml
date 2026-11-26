@@ -43,7 +43,7 @@ spec:
           app:
             image: &image
               repository: registry.${SECRET_DOMAIN}/openfinn-hub
-              tag: fc82b33@sha256:a34981339a6d817c3b4d203492aea328f0299914585a1d91b18aff6b4ff5279e
+              tag: 551730f@sha256:55e232fb2a07b6b572e4843a7323ef32f2b41ade4bd9d528b6fa22ccf017f6ba
             env: &env
               TZ: Europe/Oslo
               # Reads take the logged-out phone first.
@@ -100,6 +100,63 @@ spec:
                 memory: 64Mi
               limits:
                 memory: 512Mi
+      # Read-only web pages over the store: watches, prices, deals. It has no
+      # connectors, so it cannot reach FINN, and no login, so LAN only.
+      web:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image: *image
+            command: ["openfinn-web", "--listen", "0.0.0.0:4831"]
+            env:
+              TZ: Europe/Oslo
+              OPENFINN_IMAGES_BUCKET: openfinn-images
+              OPENFINN_IMAGES_S3_ENDPOINT: http://192.168.1.10:3900
+              OPENFINN_IMAGES_S3_ACCESS_KEY_ID_FILE: /secrets/S3_ACCESS_KEY_ID
+              OPENFINN_IMAGES_S3_SECRET_ACCESS_KEY_FILE: /secrets/S3_SECRET_ACCESS_KEY
+              OPENFINN_DATABASE_URL:
+                valueFrom:
+                  secretKeyRef:
+                    name: openfinn-secret
+                    key: OPENFINN_DATABASE_URL
+              OPENFINN_HOME_LOCATION:
+                valueFrom:
+                  secretKeyRef:
+                    name: openfinn-secret
+                    key: OPENFINN_HOME_LOCATION
+            ports:
+              - containerPort: &webPort 4831
+                name: http
+                protocol: TCP
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthz
+                    port: *webPort
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /readyz
+                    port: *webPort
+                  periodSeconds: 10
+                  timeoutSeconds: 6
+                  failureThreshold: 3
+            securityContext: *securityContext
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 256Mi
       # Each morning: sync the watches, label what is new, post new deals.
       sync:
         type: cronjob
@@ -147,6 +204,22 @@ spec:
         ports:
           http:
             port: *port
+      web:
+        controller: web
+        ports:
+          http:
+            port: *webPort
+    route:
+      web:
+        hostnames: ["openfinn.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - identifier: web
+                port: *webPort
     persistence:
       secrets:
         type: secret
